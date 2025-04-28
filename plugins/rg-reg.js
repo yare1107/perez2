@@ -1,38 +1,49 @@
-import db from '../lib/database.js'
 import { createHash } from 'crypto'
-import fs from 'fs'
-import fetch from 'node-fetch'
 
 let Reg = /\|?(.*)([.|] *?)([0-9]*)$/i
 let handler = async function (m, { conn, text, usedPrefix, command }) {
-  let user = global.db.data.users[m.sender]
-  let name2 = conn.getName(m.sender)
-  if (user.registered === true) return m.reply(`🍭 Ya estás registrado.\n\n*¿Quiere volver a registrarse?*\n\nUse este comando para eliminar su registro.\n*${usedPrefix}unreg* <Número de serie>`)
-  if (!Reg.test(text)) return m.reply(`🍭 Formato incorrecto.\n\nUso del comamdo: *${usedPrefix + command} nombre.edad*\nEjemplo : *${usedPrefix + command} ${name2}.16*`)
-  let [_, name, splitter, age] = text.match(Reg)
-  if (!name) return m.reply('🍭 El nombre no puede estar vacío.')
-  if (!age) return m.reply('🍭 La edad no puede estar vacía.')
-  if (name.length >= 100) return m.reply('🍭 El nombre es demasiado largo.' )
-  age = parseInt(age)
-  if (age > 100) return m.reply('👴🏻 Wow el abuelo quiere jugar al bot.')
-  if (age < 5) return m.reply('🚼  hay un abuelo bebé jsjsj. ')
-  user.name = name.trim()
-  user.age = age
-  user.regTime = + new Date
-  user.registered = true
-  let sn = createHash('md5').update(m.sender).digest('hex')
-  let img = await (await fetch(`https://qu.ax/FPVnV.jpg`)).buffer()
-  let txt = '– 𝘙 𝘌 𝘎 𝘐 𝘚 𝘛 𝘙 𝘖 -\n\n'
-      txt += `┌  👤  *Nombre* : ${name}\n`
-      txt += `│  ⭐  *Edad* : ${age} años\n`
-      txt += `│  💎  *Numero de serie*\n`
-      txt += `└  ☁️  ${sn}`
-await conn.sendAi(m.chat, botname, textbot, txt, img, img, canal, m)
-await m.react('⭐')
+    let user = global.db.data.users[m.sender]
+    let name2 = conn.getName(m.sender)
+    let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? this.user.jid : m.sender
+    let pp = await this.profilePictureUrl(who, 'image').catch(_ => 'https://qu.ax/kccES.jpg')
+    
+    if (user.registered === true) throw `*⚠️ Ya estás registrado*\n\n¿Quiere volver a registrarse?\n\n💬 Use este comando para *eliminar su registro*\n*${usedPrefix}unreg* <Número de serie>`
+    if (!Reg.test(text)) throw `*⚠️ Formato incorrecto*\n\n📝 Uso del comando: *${usedPrefix + command} nombre.edad*\n💡 Ejemplo : *${usedPrefix + command}* ${name2}.18`
+    
+    let [_, name, splitter, age] = text.match(Reg)
+    if (!name) throw '*📝 El nombre no puede estar vacío*'
+    if (!age) throw '*📝 La edad no puede estar vacía*'
+    if (name.length >= 30) throw '*⚠️ El nombre es demasiado largo*' 
+    age = parseInt(age)
+    if (age > 100) throw '*👴🏻 Wow el abuelo quiere jugar al bot*'
+    if (age < 5) throw '*👀 hay un bebé jsjsj*'
+    
+    user.name = name.trim()
+    user.age = age
+    user.regTime = + new Date
+    user.registered = true
+    
+    // Agrega 10 dulces al registro en la base de datos "limit"
+    if (!user.limit) user.limit = 0; // Asegurarse de que exista la propiedad
+    user.limit += 10; // Sumar 10 dulces
+    
+    let sn = createHash('md5').update(m.sender).digest('hex').slice(0, 6)	
+    m.react('📩') 
+    
+    let regbot =`🗃️ *R E G I S T R A D O* 🗃️\n
+💌 *Nombre:* ${name}
+📆 *Edad* : ${age} años
+🍬 *Dulces añadidos:* 10`
+    
+    await conn.sendMessage(m.chat, { 
+        image: { url: pp }, 
+        caption: regbot 
+    }, { quoted: m })
 }
-handler.help = ['reg'].map(v => v + ' *<nombre.edad>*')
-handler.tags = ['rg']
 
-handler.command = ['verify', 'reg', 'register', 'registrar'] 
+handler.help = ['reg']
+handler.tags = ['rg']
+handler.command = ['verify', 'reg', 'verificar'] 
 
 export default handler
+

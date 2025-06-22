@@ -40,7 +40,12 @@ const writeStock = (data) => {
   }
 };
 
-let handler = async (m, { conn, text, usedPrefix, command }) => {
+let handler = async (m, { conn, text, usedPrefix, command, isOwner }) => {
+  // SOLO EL OWNER PUEDE EDITAR STOCK
+  if (!isOwner) {
+    return m.reply('❌ *Solo el propietario del bot puede editar stock*');
+  }
+
   const stock = readStock();
   
   if (!text) {
@@ -104,6 +109,6 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 handler.help = ['editstock'];
 handler.tags = ['tools'];
 handler.command = /^(editstock|stockedit)$/i;
-handler.admin = true; // Solo administradores pueden usar este comando
+handler.owner = true; // Solo el propietario puede usar este comando
 
 export default handler;

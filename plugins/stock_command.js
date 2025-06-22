@@ -40,22 +40,27 @@ const writeStock = (data) => {
   }
 };
 
-let handler = async (m, { conn, text, usedPrefix, command }) => {
+let handler = async (m, { conn, text, usedPrefix, command, isOwner }) => {
   const stock = readStock();
   
-  // Si no hay texto, mostrar el stock actual
+  // Si no hay texto, mostrar el stock actual (CUALQUIER USUARIO)
   if (!text) {
     if (Object.keys(stock).length === 0) {
-      return m.reply(`📦 *STOCK VACÍO*\n\nUsa: *${usedPrefix + command} <nombre> <contenido>*\n\n*Ejemplo:* ${usedPrefix + command} productos Lista de productos disponibles`);
+      return m.reply(`📦 *STOCK VACÍO*\n\n_No hay productos disponibles en este momento_`);
     }
     
-    let stockList = '📦 *STOCK ACTUAL*\n\n';
+    let stockList = '📦 *STOCK DISPONIBLE*\n\n';
     for (const [key, value] of Object.entries(stock)) {
       stockList += `🔸 *${key}:*\n${value.content}\n\n`;
     }
-    stockList += `_Para editar usa:_ *${usedPrefix}editstock <nombre> <nuevo contenido>*`;
+    stockList += `_Última actualización: ${new Date().toLocaleDateString()}_`;
     
     return m.reply(stockList);
+  }
+  
+  // SOLO EL OWNER PUEDE CREAR/EDITAR STOCK
+  if (!isOwner) {
+    return m.reply('❌ *Solo el propietario del bot puede crear o editar stock*');
   }
   
   // Dividir el texto en nombre y contenido
@@ -84,6 +89,6 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 handler.help = ['stock'];
 handler.tags = ['tools'];
 handler.command = /^(stock)$/i;
-handler.admin = true; // Solo administradores pueden usar este comando
+// Sin restricciones - cualquiera puede ver el stock
 
 export default handler;

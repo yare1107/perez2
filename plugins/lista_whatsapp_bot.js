@@ -14,7 +14,7 @@ let handler = async (m, { conn, args, text }) => {
 
 👥 𝐏𝐀𝐑𝐓𝐈𝐂𝐈𝐏𝐀𝐍𝐓𝐄𝐒:
 
-(𝚁𝚎𝚊𝚌𝚌𝚒𝚘𝚗𝚊 𝚌𝚘𝚗 ❤️ 𝚙𝚊𝚛𝚊 𝚞𝚗𝚒𝚛𝚝𝚎)
+(𝚁𝚎𝚊𝚌𝚌𝚒𝚘𝚗𝚊 𝚌𝚘𝚗 ❤️, 👍, ✅ 𝚘 𝚌𝚞𝚊𝚕𝚚𝚞𝚒𝚎𝚛 𝚎𝚖𝚘𝚓𝚒 𝚙𝚊𝚛𝚊 𝚞𝚗𝚒𝚛𝚝𝚎)
   `.trim()
 
   let msg = await conn.sendMessage(m.chat, { text: plantilla }, { quoted: m })
@@ -32,6 +32,7 @@ handler.help = ['lista']
 handler.tags = ['group']
 handler.command = /^(lista)$/i
 handler.group = true
+// Quitar restricción de admin para que cualquiera pueda usar el comando
 
 // Función para manejar las reacciones
 handler.before = async function (m) {
@@ -42,8 +43,8 @@ handler.before = async function (m) {
   let emoji = reaction.text
   let sender = m.key.participant || m.key.remoteJid
 
-  // Solo procesar reacciones de corazón
-  if (!['❤️', '❤', '♥️'].includes(emoji)) return false
+  // Solo procesar reacciones de corazón, pulgar arriba, y otros emojis comunes
+  if (!['❤️', '❤', '♥️', '👍', '👍🏻', '✅', '🔥', '💯', '👏'].includes(emoji)) return false
   
   // Verificar si existe la lista
   if (!listasActivas[key.id]) return false
@@ -67,7 +68,7 @@ handler.before = async function (m) {
 👥 𝐏𝐀𝐑𝐓𝐈𝐂𝐈𝐏𝐀𝐍𝐓𝐄𝐒:
 ${participantes || 'Ninguno aún'}
 
-${data.participantes.length === 0 ? '(𝚁𝚎𝚊𝚌𝚌𝚒𝚘𝚗𝚊 𝚌𝚘𝚗 ❤️ 𝚙𝚊𝚛𝚊 𝚞𝚗𝚒𝚛𝚝𝚎)' : `✅ ${data.participantes.length} participante${data.participantes.length > 1 ? 's' : ''} registrado${data.participantes.length > 1 ? 's' : ''}`}
+${data.participantes.length === 0 ? '(𝚁𝚎𝚊𝚌𝚌𝚒𝚘𝚗𝚊 𝚌𝚘𝚗 ❤️, 👍, ✅ 𝚘 𝚌𝚞𝚊𝚕𝚚𝚞𝚒𝚎𝚛 𝚎𝚖𝚘𝚓𝚒 𝚙𝚊𝚛𝚊 𝚞𝚗𝚒𝚛𝚝𝚎)' : `📊 Total: ${data.participantes.length} participante${data.participantes.length > 1 ? 's' : ''}`}
   `.trim()
 
   try {

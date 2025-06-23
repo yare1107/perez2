@@ -89,9 +89,11 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner }) => {
 handler.help = ['stock'];
 handler.tags = ['tools'];
 handler.command = /^(stock)$/i;
-handler.admin = false;     // Permite usar el comando sin ser admin
-handler.group = false;     // Permite usar en chats privados también
-handler.private = false;   // Permite usar en grupos también
+handler.register = true;   // Requiere estar registrado
+handler.admin = false;     // No requiere ser admin del grupo
+handler.group = false;     // Funciona en grupos Y privados
+handler.private = false;   // Funciona en privados Y grupos
 handler.botAdmin = false;  // No requiere que el bot sea admin
+handler.owner = false;     // No requiere ser owner para VER stock
 
 export default handler;

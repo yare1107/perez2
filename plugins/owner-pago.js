@@ -2,11 +2,21 @@ let handler = async (m, { isPrems, conn }) => {
 
     let videoUrl = 'https://qu.ax/PWOGh.mp4';
     let texto = `
-*NUEVA TARJETA*
-*TRANSFERENCIA*
+𝐓𝐑𝐀𝐍𝐒𝐅𝐄𝐑𝐄𝐍𝐂𝐈𝐀𝐒  💸
 728969000119672904
-Franklin Pérez
-SPIN OXXO
+Stp 
+*Franklin Pérez Méndez*
+
+𝐃𝐄𝐏𝐎𝐒𝐈𝐓𝐎 💸
+2242 1701 0032 1516
+_SPIN OXXO_ 
+
+𝐌𝐚𝐧𝐝𝐚𝐫 𝐜𝐨𝐦𝐩𝐫𝐨𝐛𝐚𝐧𝐭𝐞 𝐝𝐞 𝐩𝐚𝐠𝐨 🫶🏻
+
+*MOTIVÓ*
+_-Carne_
+_-Despensa_
+_-Comida_
 `;
 
     const fkontak = {

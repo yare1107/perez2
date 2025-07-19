@@ -4,14 +4,19 @@ import fetch from 'node-fetch'
 export async function before(m, { conn, participants, groupMetadata }) {
   if (!m.messageStubType || !m.isGroup) return !0;
 
+  let chat = global.db.data.chats[m.chat]
+  if (!chat || !chat.bienvenida) return !0;
+
+  // Verificar que hay parámetros del mensaje
+  if (!m.messageStubParameters || !m.messageStubParameters[0]) return !0;
 
   let pp = await conn.profilePictureUrl(m.messageStubParameters[0], 'image').catch(_ => 'https://qu.ax/FPVnV.jpg')
   let img = await (await fetch(pp)).buffer()  
-  let chat = global.db.data.chats[m.chat]
   let welcome = ''
   let bye = ''
 
-  if (chat.bienvenida && m.messageStubType == 27) {
+  // Bienvenida cuando alguien se une al grupo (messageStubType 27)
+  if (m.messageStubType === 27 || m.messageStubType === WAMessageStubType.GROUP_PARTICIPANT_ADD) {
     if (chat.sWelcome){
       let user = `@${m.messageStubParameters[0].split`@`[0]}`
       welcome = chat.sWelcome
@@ -43,7 +48,8 @@ export async function before(m, { conn, participants, groupMetadata }) {
     await conn.sendMessage(m.chat, message, { quoted: m })
   }
 
-  if (chat.bienvenida && m.messageStubType == 28) {
+  // Despedida cuando alguien sale del grupo (messageStubType 28)
+  if (m.messageStubType === 28 || m.messageStubType === WAMessageStubType.GROUP_PARTICIPANT_REMOVE) {
     if (chat.sBye) {
           let user = `@${m.messageStubParameters[0].split`@`[0]}`
       bye = chat.sBye
@@ -75,7 +81,8 @@ export async function before(m, { conn, participants, groupMetadata }) {
     await conn.sendMessage(m.chat, message, { quoted: m })
   }
 
-  if (chat.bienvenida && m.messageStubType == 32) {
+  // Despedida cuando alguien se va del grupo (messageStubType 32)
+  if (m.messageStubType === 32 || m.messageStubType === WAMessageStubType.GROUP_PARTICIPANT_LEAVE) {
     let user = `@${m.messageStubParameters[0].split`@`[0]}`
     let text = chat.sBye || `👋🏻 𝙂𝙤𝙤𝙙𝙗𝙮𝙚 𝘽𝙤𝙩\n👤 𝙐𝙨𝙪𝙖𝙧𝙞𝙤: ${user}\n😗 𝙐𝙣𝙖 𝙚𝙨𝙘𝙤𝙧𝙞𝙖 𝙢𝙖́𝙨\n> @𝐁𝐨𝐭 𝐕𝐞𝐧𝐭𝐚𝐬𝐏𝐞𝐫𝐳𝐳𝐳 - ʟᴏᴄᴀʟ - 𝟢𝟨`
 

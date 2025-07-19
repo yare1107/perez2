@@ -428,7 +428,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 // Configuración
 handler.help = ['music', 'song', 'audio', 'mp3'];
 handler.tags = ['downloader'];
-handler.command = /^(music|song|audio|mp3|play)$/i;
+handler.command = /^(aud)$/i;
 handler.register = true;
 handler.limit = true;
 

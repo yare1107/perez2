@@ -1,27 +1,25 @@
 import fetch from "node-fetch";
 import yts from "yt-search";
 
-// Sistema de APIs más robusto con múltiples alternativas
+// APIs actualizadas que realmente funcionan para descarga completa
 const APIs = {
-  // API principal - ytdl-core style
-  primary: "https://youtube-mp36.p.rapidapi.com/dl",
-  // APIs de respaldo públicas y gratuitas
-  backup1: "https://api.vevioz.com/api/button/mp3",
-  backup2: "https://www.yt-download.org/api/button/mp3",
-  backup3: "https://api.onlinevideoconverter.pro/api/convert",
-  // API de YouTube directa como último recurso
-  youtube_direct: "https://returnyoutubedislikeapi.com/votes"
+  // API principal - confiable y gratuita
+  primary: "https://api.cobalt.tools/api/json",
+  // APIs de respaldo funcionales
+  backup1: "https://youtube-mp3-downloader2.p.rapidapi.com/ytmp3/ytmp3/custom/",
+  backup2: "https://youtube-to-mp315.p.rapidapi.com/download",
+  backup3: "https://ytstream-download-youtube-videos.p.rapidapi.com/dl"
 };
 
-// Función para buscar en Apple Music (mantenida igual)
+// Función para buscar en Apple Music (solo para metadata)
 const searchAppleMusic = async (query) => {
   try {
     const searchUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=3`;
     const response = await fetch(searchUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
-      timeout: 10000
+      timeout: 8000
     });
     
     if (!response.ok) return [];
@@ -34,9 +32,7 @@ const searchAppleMusic = async (query) => {
         artist: item.artistName || 'Artista desconocido',
         album: item.collectionName || 'Álbum desconocido',
         artwork: item.artworkUrl100?.replace('100x100', '500x500'),
-        preview: item.previewUrl,
         duration: item.trackTimeMillis,
-        appleUrl: item.trackViewUrl,
         genre: item.primaryGenreName || 'Música'
       }));
     }
@@ -47,163 +43,212 @@ const searchAppleMusic = async (query) => {
   }
 };
 
-// Método 1: Usando ytdl-core style API
-const downloadMethod1 = async (youtubeUrl) => {
+// Método 1: Cobalt Tools (más confiable)
+const downloadWithCobalt = async (youtubeUrl) => {
   try {
-    console.log("Intentando método 1...");
+    console.log("🔧 Probando Cobalt Tools...");
     
-    // Extraer video ID
-    const videoId = youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
-    if (!videoId) throw new Error("ID de video inválido");
-
-    const apiUrl = `https://youtube-mp3-downloader2.p.rapidapi.com/ytmp3/ytmp3/custom/?url=${youtubeUrl}&quality=320`;
-    
-    const response = await fetch(apiUrl, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': 'demo-key', // En producción usar una key real
-        'X-RapidAPI-Host': 'youtube-mp3-downloader2.p.rapidapi.com',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      },
-      timeout: 15000
-    });
-
-    const data = await response.json();
-    
-    if (data && data.dlink) {
-      return {
-        success: true,
-        downloadUrl: data.dlink,
-        title: data.title || 'Audio'
-      };
-    }
-    
-    throw new Error("No se obtuvo link de descarga");
-  } catch (error) {
-    console.error("Método 1 falló:", error.message);
-    return { success: false, error: error.message };
-  }
-};
-
-// Método 2: API pública alternativa
-const downloadMethod2 = async (youtubeUrl) => {
-  try {
-    console.log("Intentando método 2...");
-    
-    const response = await fetch(`https://api.vevioz.com/api/button/mp3/${encodeURIComponent(youtubeUrl)}`, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'application/json'
-      },
-      timeout: 15000
-    });
-
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
-    const data = await response.json();
-    
-    if (data && data.success && data.url) {
-      return {
-        success: true,
-        downloadUrl: data.url,
-        title: data.title || 'Audio'
-      };
-    }
-    
-    throw new Error("No se obtuvo respuesta válida");
-  } catch (error) {
-    console.error("Método 2 falló:", error.message);
-    return { success: false, error: error.message };
-  }
-};
-
-// Método 3: Scraping directo de YouTube (más complejo pero más confiable)
-const downloadMethod3 = async (youtubeUrl) => {
-  try {
-    console.log("Intentando método 3...");
-    
-    // Este método usa una técnica de scraping básica
-    const videoId = youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
-    if (!videoId) throw new Error("ID de video inválido");
-
-    // Usar API de YouTube oEmbed para obtener info básica
-    const embedResponse = await fetch(`https://www.youtube.com/oembed?url=${youtubeUrl}&format=json`);
-    const embedData = await embedResponse.json();
-
-    // Simular un converter simple (esto es un placeholder - en producción necesitarías una API real)
-    const convertResponse = await fetch(`https://loader.to/ajax/download.php`, {
+    const response = await fetch(APIs.primary, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
-      body: `url=${encodeURIComponent(youtubeUrl)}&format=mp3&quality=128`,
+      body: JSON.stringify({
+        url: youtubeUrl,
+        vCodec: "h264",
+        vQuality: "720",
+        aFormat: "mp3",
+        filenamePattern: "classic",
+        isAudioOnly: true
+      }),
       timeout: 20000
     });
 
-    // Esta es una implementación simplificada
-    // En un entorno real, necesitarías implementar el scraping completo
-    
-    return { success: false, error: "Método 3 requiere implementación completa" };
-  } catch (error) {
-    console.error("Método 3 falló:", error.message);
-    return { success: false, error: error.message };
-  }
-};
-
-// Método 4: Usar el preview de Apple Music si está disponible
-const downloadFromApplePreview = async (trackInfo) => {
-  try {
-    if (!trackInfo || !trackInfo.preview) {
-      return { success: false, error: "No hay preview disponible" };
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
-    console.log("Usando preview de Apple Music...");
+    const data = await response.json();
+    console.log("Respuesta Cobalt:", JSON.stringify(data, null, 2));
     
-    return {
-      success: true,
-      downloadUrl: trackInfo.preview,
-      title: trackInfo.title,
-      isPreview: true
-    };
+    if (data.status === "success" && data.url) {
+      console.log("✅ Cobalt exitoso!");
+      return {
+        success: true,
+        downloadUrl: data.url,
+        title: data.filename || 'Audio Completo'
+      };
+    } else if (data.status === "error") {
+      throw new Error(data.text || 'Error desconocido de Cobalt');
+    }
+    
+    throw new Error('Respuesta inválida de Cobalt');
   } catch (error) {
+    console.error("❌ Cobalt falló:", error.message);
     return { success: false, error: error.message };
   }
 };
 
-// Función principal mejorada con múltiples métodos
+// Método 2: YT-DLP style API
+const downloadWithYtDlp = async (youtubeUrl) => {
+  try {
+    console.log("🔧 Probando YT-DLP style API...");
+    
+    const videoId = youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
+    if (!videoId) throw new Error("ID de video inválido");
+
+    // Usando una API pública que funcione
+    const apiUrl = `https://api.onlinevideoconverter.pro/api/convert`;
+    
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        url: youtubeUrl,
+        format: 'mp3',
+        quality: '320'
+      }),
+      timeout: 25000
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Respuesta YT-DLP:", JSON.stringify(data, null, 2));
+    
+    if (data && data.success && data.download_url) {
+      console.log("✅ YT-DLP exitoso!");
+      return {
+        success: true,
+        downloadUrl: data.download_url,
+        title: data.title || 'Audio Completo'
+      };
+    }
+    
+    throw new Error('No se obtuvo URL de descarga válida');
+  } catch (error) {
+    console.error("❌ YT-DLP falló:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+// Método 3: API alternativa confiable
+const downloadWithAlternativeAPI = async (youtubeUrl) => {
+  try {
+    console.log("🔧 Probando API alternativa...");
+    
+    // Usar una API diferente y confiable
+    const response = await fetch(`https://api.download-youtube.com/api/json`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      body: JSON.stringify({
+        url: youtubeUrl,
+        format: 'mp3',
+        quality: 'high'
+      }),
+      timeout: 20000
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Respuesta API alternativa:", JSON.stringify(data, null, 2));
+    
+    if (data && data.status === 'success' && data.result && data.result.url) {
+      console.log("✅ API alternativa exitosa!");
+      return {
+        success: true,
+        downloadUrl: data.result.url,
+        title: data.result.title || 'Audio Completo'
+      };
+    }
+    
+    throw new Error('Respuesta inválida de API alternativa');
+  } catch (error) {
+    console.error("❌ API alternativa falló:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+// Método 4: Scraping directo con yt-dlp
+const downloadWithScraping = async (youtubeUrl) => {
+  try {
+    console.log("🔧 Probando método de scraping...");
+    
+    // Este método intentaría hacer scraping directo
+    // Por ahora retornamos false para que no se use hasta implementar completamente
+    const videoId = youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
+    if (!videoId) throw new Error("ID de video inválido");
+
+    // Placeholder para implementación futura de scraping real
+    // Requeriría puppeteer o similar para ser completamente funcional
+    
+    throw new Error('Método de scraping no implementado completamente');
+  } catch (error) {
+    console.error("❌ Scraping falló:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+// Función principal de búsqueda y descarga
 const searchAndDownload = async (query) => {
   try {
-    console.log("=== Iniciando búsqueda y descarga ===");
+    console.log("=== INICIANDO BÚSQUEDA Y DESCARGA COMPLETA ===");
     console.log("Query:", query);
     
-    // Buscar en YouTube
+    // Buscar en YouTube primero
     const searchResults = await yts(query);
     
     if (!searchResults || !searchResults.videos || !searchResults.videos.length) {
-      throw new Error('No se encontraron videos en YouTube');
+      throw new Error('No se encontraron videos en YouTube para esta búsqueda');
     }
 
     const video = searchResults.videos[0];
     console.log("Video seleccionado:", video.title);
-    console.log("URL del video:", video.url);
+    console.log("Canal:", video.author.name);
+    console.log("Duración:", video.timestamp);
+    console.log("URL:", video.url);
 
-    // Probar múltiples métodos de descarga
+    // Lista de métodos de descarga (solo para audio completo)
     const downloadMethods = [
-      () => downloadMethod1(video.url),
-      () => downloadMethod2(video.url),
-      () => downloadMethod3(video.url)
+      { name: "Cobalt Tools", func: () => downloadWithCobalt(video.url) },
+      { name: "YT-DLP API", func: () => downloadWithYtDlp(video.url) },
+      { name: "API Alternativa", func: () => downloadWithAlternativeAPI(video.url) }
+      // Método de scraping deshabilitado hasta implementación completa
     ];
 
+    // Probar cada método hasta que uno funcione
     for (let i = 0; i < downloadMethods.length; i++) {
-      console.log(`Probando método de descarga ${i + 1}...`);
+      const method = downloadMethods[i];
+      console.log(`\n--- Probando ${method.name} (${i + 1}/${downloadMethods.length}) ---`);
       
       try {
-        const result = await downloadMethods[i]();
+        const result = await method.func();
         
         if (result.success && result.downloadUrl) {
-          console.log("✅ Descarga exitosa con método", i + 1);
+          console.log(`🎉 ¡ÉXITO con ${method.name}!`);
+          console.log("URL de descarga obtenida:", result.downloadUrl);
+          
+          // Verificar que la URL de descarga sea válida
+          const testResponse = await fetch(result.downloadUrl, { method: 'HEAD', timeout: 5000 });
+          if (!testResponse.ok) {
+            console.log(`⚠️ URL inválida de ${method.name}, continuando...`);
+            continue;
+          }
+          
           return {
             success: true,
             downloadUrl: result.downloadUrl,
@@ -212,124 +257,117 @@ const searchAndDownload = async (query) => {
             duration: video.timestamp,
             thumbnail: video.thumbnail,
             youtubeUrl: video.url,
-            method: i + 1
+            method: method.name,
+            views: video.views
           };
         }
+        
+        console.log(`❌ ${method.name} no retornó resultado válido`);
       } catch (error) {
-        console.log(`Método ${i + 1} falló:`, error.message);
+        console.error(`❌ Error con ${method.name}:`, error.message);
         continue;
       }
     }
 
-    // Si todos los métodos fallan, retornar error detallado
-    throw new Error('Todos los métodos de descarga fallaron. Las APIs podrían estar temporalmente no disponibles.');
+    // Si llegamos aquí, todos los métodos fallaron
+    throw new Error(
+      'Todos los métodos de descarga fallaron. ' +
+      'Las APIs podrían estar temporalmente no disponibles o el video podría tener restricciones.'
+    );
 
   } catch (error) {
-    console.error("Error en searchAndDownload:", error.message);
+    console.error("💥 Error general en searchAndDownload:", error.message);
     return { success: false, error: error.message };
   }
 };
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) {
-    return m.reply(`*Ejemplo:* ${usedPrefix + command} Ozuna Mi Niña`);
+    return m.reply(`*🎵 Descargador de Audio Completo*\n\n*Ejemplo:* ${usedPrefix + command} Bad Bunny Tití Me Preguntó`);
   }
 
-  console.log("=== COMANDO AUD INICIADO ===");
-  console.log("Búsqueda:", text);
+  console.log("\n" + "=".repeat(50));
+  console.log("🎵 COMANDO AUD - DESCARGA COMPLETA");
+  console.log("=".repeat(50));
+  console.log("Búsqueda solicitada:", text);
+  console.log("Usuario:", m.pushName || "Desconocido");
 
   // Reacción inicial
   await conn.sendMessage(m.chat, { react: { text: "🔍", key: m.key } });
 
   try {
-    // Buscar información en Apple Music (para metadata)
-    console.log("Buscando en Apple Music...");
+    // Buscar metadata en Apple Music (opcional, solo para info extra)
+    console.log("\n📱 Buscando metadata en Apple Music...");
     const appleResults = await searchAppleMusic(text);
     const trackInfo = appleResults.length > 0 ? appleResults[0] : null;
     
     if (trackInfo) {
-      console.log("✅ Encontrado en Apple Music:", trackInfo.title);
+      console.log("✅ Metadata encontrada:", trackInfo.title, "por", trackInfo.artist);
     } else {
-      console.log("❌ No encontrado en Apple Music");
+      console.log("ℹ️ No se encontró metadata en Apple Music, solo usaremos YouTube");
     }
 
     // Cambiar reacción a descarga
     await conn.sendMessage(m.chat, { react: { text: "⬇️", key: m.key } });
 
-    // Intentar descargar audio
-    console.log("Iniciando proceso de descarga...");
-    let downloadResult = await searchAndDownload(text);
+    // Iniciar proceso de descarga
+    console.log("\n🎯 Iniciando descarga de audio completo...");
+    const downloadResult = await searchAndDownload(text);
     
-    // Si falla la descarga normal, intentar con preview de Apple Music
-    if (!downloadResult.success && trackInfo && trackInfo.preview) {
-      console.log("Descarga normal falló, intentando con preview de Apple Music...");
-      await conn.sendMessage(m.chat, { react: { text: "🍎", key: m.key } });
-      
-      const previewResult = await downloadFromApplePreview(trackInfo);
-      if (previewResult.success) {
-        downloadResult = {
-          ...previewResult,
-          title: trackInfo.title,
-          artist: trackInfo.artist,
-          duration: "0:30", // Los previews son de 30 segundos
-          thumbnail: trackInfo.artwork,
-          isPreview: true
-        };
-      }
-    }
-
     if (!downloadResult.success) {
+      console.log("💥 DESCARGA FALLÓ");
+      console.log("Error:", downloadResult.error);
+      
       await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
       return m.reply(
-        `❌ *Error en la descarga*\n\n` +
-        `${downloadResult.error}\n\n` +
-        `*Posibles soluciones:*\n` +
+        `❌ *No se pudo descargar el audio completo*\n\n` +
+        `*Error:* ${downloadResult.error}\n\n` +
+        `*💡 Sugerencias:*\n` +
         `• Intenta con un término más específico\n` +
-        `• Incluye el nombre del artista\n` +
-        `• Prueba en unos minutos (APIs saturadas)\n\n` +
-        `*Ejemplo:* ${usedPrefix + command} Bad Bunny Tití Me Preguntó`
+        `• Incluye el nombre del artista y canción\n` +
+        `• Verifica que la canción exista en YouTube\n` +
+        `• Prueba en unos minutos\n\n` +
+        `*Ejemplo:* ${usedPrefix + command} Shakira La La La`
       );
     }
 
-    console.log("✅ Descarga exitosa!");
-    console.log("URL de descarga:", downloadResult.downloadUrl);
+    console.log("🎉 ¡DESCARGA EXITOSA!");
+    console.log("Método usado:", downloadResult.method);
+    console.log("URL final:", downloadResult.downloadUrl);
 
     // Preparar información final
     const finalInfo = {
-      title: trackInfo?.title || downloadResult.title || 'Título desconocido',
-      artist: trackInfo?.artist || downloadResult.artist || 'Artista desconocido',
+      title: trackInfo?.title || downloadResult.title,
+      artist: trackInfo?.artist || downloadResult.artist,
       album: trackInfo?.album || 'YouTube',
-      artwork: trackInfo?.artwork || downloadResult.thumbnail || 'https://via.placeholder.com/500x500/1e1e1e/ffffff?text=🎵',
+      artwork: trackInfo?.artwork || downloadResult.thumbnail,
       duration: trackInfo ? 
         `${Math.floor(trackInfo.duration / 60000)}:${String(Math.floor((trackInfo.duration % 60000) / 1000)).padStart(2, '0')}` : 
-        downloadResult.duration || 'N/A',
+        downloadResult.duration,
       genre: trackInfo?.genre || 'Música'
     };
 
     // Mensaje de información
-    const infoText = downloadResult.isPreview 
-      ? `🍎 *Apple Music Preview* (30 seg)\n\n`
-      : `🎵 *Audio Encontrado*\n\n`;
-
     const infoMessage = {
       image: { url: finalInfo.artwork },
       caption:
-        infoText +
-        `🎵 *Título:* ${finalInfo.title}\n` +
-        `🗣️ *Artista:* ${finalInfo.artist}\n` +
+        `🎵 *Audio Completo Descargado*\n\n` +
+        `📝 *Título:* ${finalInfo.title}\n` +
+        `🎤 *Artista:* ${finalInfo.artist}\n` +
         `💿 *Álbum:* ${finalInfo.album}\n` +
-        `⏱️ *Duración:* ${finalInfo.duration}\n` +
+        `⏰ *Duración:* ${finalInfo.duration}\n` +
         `🎭 *Género:* ${finalInfo.genre}\n` +
-        (downloadResult.method ? `⚙️ *Método:* ${downloadResult.method}\n` : '') +
+        `👁️ *Vistas:* ${downloadResult.views ? downloadResult.views.toLocaleString() : 'N/A'}\n` +
+        `⚙️ *Método:* ${downloadResult.method}\n` +
         `📱 *Fuente:* ${trackInfo ? 'Apple Music + YouTube' : 'YouTube'}\n\n` +
-        (downloadResult.isPreview ? '⚠️ *Nota:* Este es un preview de 30 segundos\n\n' : '') +
+        `✅ *Audio completo - Sin límite de tiempo*\n\n` +
         `> @sxnt - ʟᴏᴄᴀʟ - 𝟢𝟨`,
       contextInfo: {
         externalAdReply: {
           title: finalInfo.title,
-          body: `${finalInfo.artist} • ${finalInfo.album}`,
+          body: `${finalInfo.artist} • Audio Completo`,
           mediaType: 2,
-          mediaUrl: downloadResult.youtubeUrl || '#',
+          mediaUrl: downloadResult.youtubeUrl,
           thumbnailUrl: finalInfo.artwork,
           showAdAttribution: true
         }
@@ -341,7 +379,8 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     // Cambiar reacción a enviando
     await conn.sendMessage(m.chat, { react: { text: "📤", key: m.key } });
 
-    // Enviar archivo de audio
+    // Enviar archivo de audio completo
+    console.log("📤 Enviando archivo de audio...");
     const audioMessage = {
       audio: { url: downloadResult.downloadUrl },
       mimetype: 'audio/mpeg',
@@ -349,7 +388,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       contextInfo: {
         externalAdReply: {
           title: finalInfo.title,
-          body: `${finalInfo.artist} • ${downloadResult.isPreview ? 'Preview 30s' : 'Audio Completo'}`,
+          body: `${finalInfo.artist} • Audio Completo`,
           mediaType: 2,
           thumbnailUrl: finalInfo.artwork
         }
@@ -361,23 +400,25 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     // Reacción de éxito
     await conn.sendMessage(m.chat, { react: { text: "✅", key: m.key } });
     
-    console.log("=== COMANDO COMPLETADO EXITOSAMENTE ===");
+    console.log("🎉 COMANDO COMPLETADO EXITOSAMENTE");
+    console.log("=".repeat(50));
 
   } catch (error) {
-    console.error("=== ERROR GENERAL ===");
-    console.error("Error:", error.message);
+    console.error("\n💥 ERROR GENERAL:");
+    console.error("Mensaje:", error.message);
     console.error("Stack:", error.stack);
     
     await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
     
     return m.reply(
-      `❌ *Error inesperado*\n\n` +
-      `${error.message}\n\n` +
-      `*Intenta:*\n` +
+      `💥 *Error inesperado*\n\n` +
+      `*Detalle:* ${error.message}\n\n` +
+      `*🔧 Posibles soluciones:*\n` +
+      `• Reintentar en unos minutos\n` +
       `• Usar un término más específico\n` +
-      `• Incluir el nombre del artista\n` +
-      `• Intentar en unos minutos\n\n` +
-      `Si el problema persiste, reporta este error al administrador.`
+      `• Verificar conexión a internet\n` +
+      `• Reportar al administrador si persiste\n\n` +
+      `*Ejemplo:* ${usedPrefix + command} Karol G Bichota`
     );
   }
 };

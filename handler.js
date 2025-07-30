@@ -94,7 +94,7 @@ chat.isBanned = false
 if (!('bienvenida' in chat))
 chat.bienvenida = true
 if (!('modoadmin' in chat)) 
-chat.modoadmin = true
+chat.modoadmin = false
 if (!('onlyGod' in chat)) 
 chat.onlyGod = false
 if (!('onlyLatinos' in chat))
@@ -115,7 +115,7 @@ chat.expired = 0
 global.db.data.chats[m.chat] = {
 isBanned: false,
 bienvenida: true,
-modoadmin: true,
+modoadmin: false,
 onlyGod: false,
 onlyLatinos: false,
 detect: true,
@@ -297,13 +297,13 @@ if (name != 'owner-unbanbot.js' && setting?.banned)
 return
 }
 let hl = _prefix 
-let adminMode = global.db.data.chats[m.chat].modoadmin;
-let onlyGod = global.db.data.chats[m.chat].onlyGod;
-let isGod = global.db.data.users[m.sender].isGod;
+let adminMode = global.db.data.chats[m.chat]?.modoadmin || false;
+let onlyGod = global.db.data.chats[m.chat]?.onlyGod || false;
+let isGod = global.db.data.users[m.sender]?.isGod || false;
 
-
-if (onlyGod && !isOwner && !isROwner && m.isGroup && !isGod) return;
-if (adminMode && !isOwner && !isROwner && m.isGroup && !isAdmin) return;
+// Solo aplicar restricciones si están explícitamente activadas
+if (onlyGod === true && !isOwner && !isROwner && m.isGroup && !isGod) return;
+if (adminMode === true && !isOwner && !isROwner && m.isGroup && !isAdmin) return;
 if (plugin.rowner && plugin.owner && !(isROwner || isOwner)) { 
 fail('owner', m, this)
 continue

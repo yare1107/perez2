@@ -682,4 +682,3 @@ handler.customPrefix = /^(Bueno master|maldito teni|conoces a miguel|usted es fe
 handler.command = new RegExp;
 
 export default handler;
-

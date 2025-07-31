@@ -1,7 +1,7 @@
 import yts from "yt-search";
 import axios from "axios";
 
-// 🎵 DESCARGADOR DE AUDIO SIMPLIFICADO Y CONFIABLE
+// 🎵 DESCARGADOR DE AUDIO MEJORADO Y CONFIABLE
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) {
     return m.reply(
@@ -119,16 +119,20 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 async function tryDownloadMethods(videoId, videoInfo) {
   const methods = [
     {
-      name: "Y2Mate",
-      func: () => downloadWithY2Mate(videoId)
+      name: "API Vredenz",
+      func: () => downloadWithVredenz(videoId)
     },
     {
-      name: "Loader.to",
-      func: () => downloadWithLoader(videoId)
+      name: "API Akuari",
+      func: () => downloadWithAkuari(videoId)
     },
     {
-      name: "SSYoutube",
-      func: () => downloadWithSSYoutube(videoId)
+      name: "API Neoxr",
+      func: () => downloadWithNeoxr(videoId)
+    },
+    {
+      name: "API Xteam",
+      func: () => downloadWithXteam(videoId)
     }
   ];
 
@@ -160,94 +164,107 @@ async function tryDownloadMethods(videoId, videoInfo) {
   };
 }
 
-// Método 1: Y2Mate
-async function downloadWithY2Mate(videoId) {
+// Método 1: API Vredenz
+async function downloadWithVredenz(videoId) {
   try {
-    const response = await axios.get(`https://y2mate.com/api/convert`, {
-      params: {
-        video_id: videoId,
-        format: 'mp3',
-        quality: '128'
-      },
-      timeout: 15000,
+    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    const apiUrl = `https://api.vredenz.web.id/api/ytmp3?url=${encodeURIComponent(youtubeUrl)}`;
+    
+    const response = await axios.get(apiUrl, {
+      timeout: 20000,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       }
     });
 
-    if (response.data?.success && response.data?.download_url) {
+    if (response.data?.status === 'success' && response.data?.result?.url) {
       return {
         success: true,
-        downloadUrl: response.data.download_url
+        downloadUrl: response.data.result.url
       };
     }
     
-    throw new Error('Y2Mate no retornó URL válida');
+    throw new Error('API Vredenz no retornó URL válida');
   } catch (error) {
-    throw new Error(`Y2Mate: ${error.message}`);
+    throw new Error(`API Vredenz: ${error.message}`);
   }
 }
 
-// Método 2: Loader.to
-async function downloadWithLoader(videoId) {
+// Método 2: API Akuari
+async function downloadWithAkuari(videoId) {
   try {
     const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    const apiUrl = `https://api.akuari.my.id/downloader/ytmp3?link=${encodeURIComponent(youtubeUrl)}`;
     
-    const response = await axios.post('https://loader.to/ajax/download.php', {
-      url: youtubeUrl,
-      format: 'mp3'
-    }, {
+    const response = await axios.get(apiUrl, {
       timeout: 20000,
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Referer': 'https://loader.to/',
-        'Origin': 'https://loader.to'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       }
     });
 
-    if (response.data?.success && response.data?.download_url) {
+    if (response.data?.respon && response.data?.respon?.url) {
       return {
         success: true,
-        downloadUrl: response.data.download_url
+        downloadUrl: response.data.respon.url
       };
     }
     
-    throw new Error('Loader.to no retornó URL válida');
+    throw new Error('API Akuari no retornó URL válida');
   } catch (error) {
-    throw new Error(`Loader.to: ${error.message}`);
+    throw new Error(`API Akuari: ${error.message}`);
   }
 }
 
-// Método 3: SSYoutube
-async function downloadWithSSYoutube(videoId) {
+// Método 3: API Neoxr
+async function downloadWithNeoxr(videoId) {
   try {
     const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    const ssUrl = youtubeUrl.replace('youtube.com', 'ssyoutube.com');
+    const apiUrl = `https://api.neoxr.my.id/api/ytmp3?url=${encodeURIComponent(youtubeUrl)}`;
     
-    const response = await axios.post('https://ssyoutube.com/api/convert', {
-      url: ssUrl,
-      format: 'mp3'
-    }, {
-      timeout: 15000,
+    const response = await axios.get(apiUrl, {
+      timeout: 20000,
       headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Referer': 'https://ssyoutube.com/',
-        'Origin': 'https://ssyoutube.com'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       }
     });
 
-    if (response.data?.success && response.data?.download_url) {
+    if (response.data?.status === 'success' && response.data?.result?.url) {
       return {
         success: true,
-        downloadUrl: response.data.download_url
+        downloadUrl: response.data.result.url
       };
     }
     
-    throw new Error('SSYoutube no retornó URL válida');
+    throw new Error('API Neoxr no retornó URL válida');
   } catch (error) {
-    throw new Error(`SSYoutube: ${error.message}`);
+    throw new Error(`API Neoxr: ${error.message}`);
+  }
+}
+
+// Método 4: API Xteam
+async function downloadWithXteam(videoId) {
+  try {
+    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    const apiUrl = `https://api.xteam.xyz/dl/ytmp3?url=${encodeURIComponent(youtubeUrl)}&APIKEY=YOUR_API_KEY`;
+    
+    const response = await axios.get(apiUrl, {
+      timeout: 20000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+
+    if (response.data?.status === 200 && response.data?.result?.url) {
+      return {
+        success: true,
+        downloadUrl: response.data.result.url
+      };
+    }
+    
+    throw new Error('API Xteam no retornó URL válida');
+  } catch (error) {
+    throw new Error(`API Xteam: ${error.message}`);
   }
 }
 
@@ -261,7 +278,7 @@ function extractVideoId(url) {
 // Configuración
 handler.help = ['music', 'song', 'audio', 'mp3', 'aud'];
 handler.tags = ['downloader'];
-handler.command = /^(aud)$/i;
+handler.command = /^(aud|music|song|audio|mp3)$/i;
 handler.register = true;
 handler.limit = true;
 

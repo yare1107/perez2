@@ -261,7 +261,7 @@ function extractVideoId(url) {
 // Configuración
 handler.help = ['music', 'song', 'audio', 'mp3', 'aud'];
 handler.tags = ['downloader'];
-handler.command = /^(aud|music|song|audio|mp3)$/i;
+handler.command = /^(aud)$/i;
 handler.register = true;
 handler.limit = true;
 

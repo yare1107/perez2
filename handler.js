@@ -172,10 +172,10 @@ await delay(time)
 }, time)
 }
 
-// CORREGIDO: Comentado temporalmente para debug
-// if (m.isBaileys || isBaileysFail && m?.sender === this?.this?.user?.jid) {
-// return
-// }
+// CORREGIDO: Mejorado el manejo de mensajes de Baileys
+if (m.isBaileys && m?.sender === this?.user?.jid) {
+return
+}
 m.exp += Math.ceil(Math.random() * 10)
 
 let usedPrefix
@@ -272,8 +272,11 @@ m.plugin = name
 if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
 let chat = global.db.data.chats[m.chat]
 let user = global.db.data.users[m.sender]
-// CORREGIDO: Simplificado el chequeo de grupos baneados
-if (chat?.isBanned && !isROwner && !['owner-unbanchat.js', 'owner-exec.js', 'owner-exec2.js', 'tool-delete.js'].includes(name)) return
+// CORREGIDO: Mejorado el chequeo de grupos baneados - solo bloquear comandos específicos
+if (chat?.isBanned && !isROwner && !['owner-unbanchat.js', 'owner-exec.js', 'owner-exec2.js', 'tool-delete.js', 'owner-banlist.js'].includes(name)) {
+console.log(`[BLOQUEADO] Grupo ${m.chat} está baneado`)
+return
+}
 if (m.text && user?.banned && !isROwner) {
 if (user.antispam > 2) return
 m.reply(`🚫 Está baneado(a), no puede usar los comandos de este bot!\n\n${user.bannedReason ? `\n💌 *Motivo:* 
@@ -306,9 +309,15 @@ let adminMode = global.db.data.chats[m.chat]?.modoadmin || false;
 let onlyGod = global.db.data.chats[m.chat]?.onlyGod || false;
 let isGod = global.db.data.users[m.sender]?.isGod || false;
 
-// Solo aplicar restricciones si están explícitamente activadas
-if (onlyGod === true && !isOwner && !isROwner && m.isGroup && !isGod) return;
-if (adminMode === true && !isOwner && !isROwner && m.isGroup && !isAdmin) return;
+// CORREGIDO: Mejorado el manejo de restricciones - solo aplicar si están explícitamente activadas y el usuario no es admin/owner
+if (onlyGod === true && !isOwner && !isROwner && m.isGroup && !isGod && !isAdmin) {
+console.log(`[BLOQUEADO] Modo solo Dios activado para ${m.sender}`)
+return
+}
+if (adminMode === true && !isOwner && !isROwner && m.isGroup && !isAdmin) {
+console.log(`[BLOQUEADO] Modo solo admin activado para ${m.sender}`)
+return
+}
 if (plugin.rowner && plugin.owner && !(isROwner || isOwner)) { 
 fail('owner', m, this)
 continue

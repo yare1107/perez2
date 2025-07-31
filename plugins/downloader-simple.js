@@ -1,11 +1,11 @@
 import yts from "yt-search";
 import axios from "axios";
 
-// 🎵 DESCARGADOR PLAY - SIMPLE Y CONFIABLE
+// 🎵 DESCARGADOR SIMPLE Y CONFIABLE
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) {
     return m.reply(
-      `🎵 *Descargador Play*\n\n` +
+      `🎵 *Descargador Simple*\n\n` +
       `*📝 Uso:*\n` +
       `${usedPrefix + command} <nombre de canción>\n` +
       `${usedPrefix + command} <URL de YouTube>\n\n` +
@@ -60,8 +60,8 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       }
     }
 
-    // Intentar descargar usando API confiable
-    const downloadResult = await downloadWithReliableAPI(videoId);
+    // Intentar descargar usando API simple
+    const downloadResult = await downloadWithSimpleAPI(videoId);
     
     if (!downloadResult.success) {
       return m.reply(
@@ -83,7 +83,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         `🎤 *Canal:* ${videoInfo?.author?.name || 'Desconocido'}\n` +
         `⏰ *Duración:* ${videoInfo?.timestamp || 'N/A'}\n` +
         `👁️ *Vistas:* ${videoInfo?.views ? videoInfo.views.toLocaleString() : 'N/A'}\n` +
-        `🔧 *Método:* API Confiable\n\n` +
+        `🔧 *Método:* API Simple\n\n` +
         `📤 *Enviando audio...*`
     };
 
@@ -115,57 +115,53 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   }
 };
 
-// Función de descarga usando API confiable
-async function downloadWithReliableAPI(videoId) {
-  const apis = [
-    {
-      name: "Vredenz",
-      url: `https://api.vredenz.web.id/api/ytmp3?url=https://www.youtube.com/watch?v=${videoId}`,
-      check: (data) => data?.status === 'success' && data?.result?.url
-    },
-    {
-      name: "Akuari",
-      url: `https://api.akuari.my.id/downloader/ytmp3?link=https://www.youtube.com/watch?v=${videoId}`,
-      check: (data) => data?.respon && data?.respon?.url
-    },
-    {
-      name: "Neoxr",
-      url: `https://api.neoxr.my.id/api/ytmp3?url=https://www.youtube.com/watch?v=${videoId}`,
-      check: (data) => data?.status === 'success' && data?.result?.url
-    }
-  ];
+// Función de descarga usando API simple
+async function downloadWithSimpleAPI(videoId) {
+  try {
+    // Usar API de vredenz (más confiable)
+    const apiUrl = `https://api.vredenz.web.id/api/ytmp3?url=https://www.youtube.com/watch?v=${videoId}`;
+    
+    const response = await axios.get(apiUrl, {
+      timeout: 20000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
 
-  for (const api of apis) {
+    if (response.data?.status === 'success' && response.data?.result?.url) {
+      return {
+        success: true,
+        downloadUrl: response.data.result.url
+      };
+    }
+    
+    throw new Error('API no retornó URL válida');
+  } catch (error) {
+    console.error("Error en API simple:", error.message);
+    
+    // Intentar con API alternativa
     try {
-      console.log(`🔧 Probando API ${api.name}...`);
+      const altApiUrl = `https://api.akuari.my.id/downloader/ytmp3?link=https://www.youtube.com/watch?v=${videoId}`;
       
-      const response = await axios.get(api.url, {
+      const altResponse = await axios.get(altApiUrl, {
         timeout: 15000,
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
       });
 
-      if (api.check(response.data)) {
-        console.log(`✅ API ${api.name} exitosa!`);
+      if (altResponse.data?.respon && altResponse.data?.respon?.url) {
         return {
           success: true,
-          downloadUrl: response.data.result?.url || response.data.respon?.url
+          downloadUrl: altResponse.data.respon.url
         };
       }
-    } catch (error) {
-      console.log(`❌ API ${api.name} falló:`, error.message);
-      continue;
+    } catch (altError) {
+      console.error("Error en API alternativa:", altError.message);
     }
     
-    // Pausa entre intentos
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    throw new Error('Todas las APIs fallaron');
   }
-
-  return {
-    success: false,
-    error: "Todas las APIs fallaron"
-  };
 }
 
 // Función auxiliar para extraer ID del video
@@ -182,4 +178,4 @@ handler.command = /^(play|song|audio|mp3)$/i;
 handler.register = true;
 handler.limit = true;
 
-export default handler;
+export default handler; 

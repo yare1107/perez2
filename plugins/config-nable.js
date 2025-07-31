@@ -36,6 +36,15 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isR
       chat.modoadmin = isEnable          
       break
 
+      case 'onlygod': case 'solodios':
+      if (m.isGroup) {
+      if (!(isAdmin || isOwner)) {
+      global.dfail('admin', m, conn)
+      throw false
+      }}
+      chat.onlyGod = isEnable          
+      break
+
       case 'antifake':
       case 'antifakes':
       case 'antiarabes':
@@ -89,6 +98,24 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isR
       bot.antiPrivate = isEnable
       break
 
+      case 'autoread':
+      isAll = true
+      if (!isROwner) {
+      global.dfail('rowner', m, conn)
+      throw false
+      }
+      bot.autoread = isEnable
+      break
+
+      case 'antispam':
+      isAll = true
+      if (!isROwner) {
+      global.dfail('rowner', m, conn)
+      throw false
+      }
+      bot.antiSpam = isEnable
+      break
+
       case 'antilink':
       if (m.isGroup) {
         if (!(isAdmin || isOwner)) {
@@ -126,6 +153,46 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isR
            }}
     chat.nsfw = isEnable          
     break
+
+    case 'reaction':
+    case 'reacciones':
+      if (m.isGroup) {
+      if (!(isAdmin || isOwner)) {
+      global.dfail('admin', m, conn)
+      throw false
+      }}
+      chat.reaction = isEnable          
+      break
+
+    case 'info':
+    case 'estado':
+      // Mostrar estado actual de configuraciones
+      let statusInfo = `*📊 ESTADO DE CONFIGURACIONES*\n\n`
+      statusInfo += `*🔧 Grupo:*\n`
+      statusInfo += `• Bienvenida: ${chat?.bienvenida ? '✅' : '❌'}\n`
+      statusInfo += `• Modo Solo Admin: ${chat?.modoadmin ? '✅' : '❌'}\n`
+      statusInfo += `• Modo Solo Dios: ${chat?.onlyGod ? '✅' : '❌'}\n`
+      statusInfo += `• Antilink: ${chat?.antiLink ? '✅' : '❌'}\n`
+      statusInfo += `• Antidelete: ${chat?.delete ? '✅' : '❌'}\n`
+      statusInfo += `• NSFW: ${chat?.nsfw ? '✅' : '❌'}\n`
+      statusInfo += `• Audios: ${chat?.audios ? '✅' : '❌'}\n`
+      statusInfo += `• Detect: ${chat?.detect ? '✅' : '❌'}\n`
+      statusInfo += `• Antifake: ${chat?.onlyLatinos ? '✅' : '❌'}\n`
+      statusInfo += `• Reacciones: ${chat?.reaction ? '✅' : '❌'}\n\n`
+      
+      statusInfo += `*🤖 Bot:*\n`
+      statusInfo += `• JadiBot MD: ${bot?.jadibotmd ? '✅' : '❌'}\n`
+      statusInfo += `• Auto Bio: ${bot?.autobio ? '✅' : '❌'}\n`
+      statusInfo += `• Anti Privado: ${bot?.antiPrivate ? '✅' : '❌'}\n`
+      statusInfo += `• Auto Read: ${bot?.autoread ? '✅' : '❌'}\n`
+      statusInfo += `• Anti Spam: ${bot?.antiSpam ? '✅' : '❌'}\n\n`
+      
+      statusInfo += `*👤 Usuario:*\n`
+      statusInfo += `• Document: ${user?.useDocument ? '✅' : '❌'}\n`
+      
+      m.reply(statusInfo)
+      return
+      
     default:
       if (!/[01]/.test(command)) return m.reply(`
 *𝘐𝘯𝘨𝘳𝘦𝘴𝘢 𝘶𝘯𝘢 𝘰𝘱𝘤𝘪𝘰́𝘯 𝘱𝘢𝘳𝘢 𝘈𝘤𝘵𝘪𝘷𝘢𝘳 𝘰 𝘋𝘦𝘴𝘢𝘤𝘵𝘪𝘷𝘢𝘳*
@@ -137,6 +204,9 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isR
 
 𝘖𝘯/𝘖𝘧𝘧 𝘮𝘰𝘥𝘰𝘢𝘥𝘮𝘪𝘯 
 *𝘋𝘦𝘴𝘤𝘳𝘪𝘱𝘤𝘪𝘰́𝘯 :* 𝘋𝘦𝘴/𝘈𝘤𝘵𝘪𝘷𝘢 𝘭𝘰𝘴 *𝘤𝘰𝘮𝘢𝘯𝘥𝘰𝘴* 𝘴𝘰𝘭𝘰 𝘱𝘢𝘳𝘢 𝘢𝘥𝘮𝘪𝘯𝘪𝘴𝘵𝘳𝘢𝘥𝘰𝘳𝘦𝘴.
+
+𝘖𝘯/𝘖𝘧𝘧 𝘰𝘯𝘭𝘺𝘨𝘰𝘥
+*𝘋𝘦𝘴𝘤𝘳𝘪𝘱𝘤𝘪𝘰́𝘯 :* 𝘋𝘦𝘴/𝘈𝘤𝘵𝘪𝘷𝘢 𝘭𝘰𝘴 *𝘤𝘰𝘮𝘢𝘯𝘥𝘰𝘴* 𝘴𝘰𝘭𝘰 𝘱𝘢𝘳𝘢 𝘋𝘪𝘰𝘴𝘦𝘴.
 
 𝘖𝘯/𝘖𝘧𝘧 𝘥𝘦𝘵𝘦𝘤𝘵 
 *𝘋𝘦𝘴𝘤𝘳𝘪𝘱𝘤𝘪𝘰́𝘯 :* 𝘋𝘦𝘴/𝘈𝘤𝘵𝘪𝘷𝘢 𝘭𝘰𝘴 *𝘢𝘷𝘪𝘴𝘰𝘴* 𝘥𝘦𝘯𝘵𝘳𝘰 𝘥𝘦𝘭 𝘎𝘳𝘶𝘱𝘰.
@@ -155,6 +225,18 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isR
 
 𝘖𝘯/𝘖𝘧𝘧 𝘢𝘯𝘵𝘪𝘱𝘳𝘪𝘷𝘢𝘥𝘰
 *𝘋𝘦𝘴𝘤𝘳𝘪𝘱𝘤𝘪𝘰́𝘯 :* 𝘋𝘦𝘴/𝘈𝘤𝘵𝘪𝘷𝘢 𝘌𝘭 𝘶𝘴𝘰 𝘥𝘦𝘭 𝘉𝘰𝘵 𝘢𝘭 𝘗𝘳𝘪𝘷𝘢𝘥𝘰/ 𝘱𝘢𝘳𝘢 𝘦𝘭 𝘖𝘸𝘯𝘦𝘳.
+
+𝘖𝘯/𝘖𝘧𝘧 𝘢𝘶𝘵𝘰𝘳𝘦𝘢𝘥
+*𝘋𝘦𝘴𝘤𝘳𝘪𝘱𝘤𝘪𝘰́𝘯 :* 𝘋𝘦𝘴/𝘈𝘤𝘵𝘪𝘷𝘢 𝘭𝘢 𝘭𝘦𝘤𝘵𝘶𝘳𝘢 𝘢𝘶𝘵𝘰𝘮𝘢́𝘵𝘪𝘤𝘢 𝘥𝘦 𝘮𝘦𝘯𝘴𝘢𝘫𝘦𝘴.
+
+𝘖𝘯/𝘖𝘧𝘧 𝘢𝘯𝘵𝘪𝘴𝘱𝘢𝘮
+*𝘋𝘦𝘴𝘤𝘳𝘪𝘱𝘤𝘪𝘰́𝘯 :* 𝘋𝘦𝘴/𝘈𝘤𝘵𝘪𝘷𝘢 𝘦𝘭 𝘢𝘯𝘵𝘪𝘴𝘱𝘢𝘮.
+
+𝘖𝘯/𝘖𝘧𝘧 𝘳𝘦𝘢𝘤𝘱𝘪𝘰𝘯
+*𝘋𝘦𝘴𝘤𝘳𝘪𝘱𝘤𝘪𝘰́𝘯 :* 𝘋𝘦𝘴/𝘈𝘤𝘵𝘪𝘷𝘢 𝘭𝘢𝘴 𝘳𝘦𝘢𝘤𝘤𝘪𝘰𝘯𝘦𝘴 𝘢𝘶𝘵𝘰𝘮𝘢́𝘵𝘪𝘤𝘢𝘴.
+
+𝘖𝘯/𝘖𝘧𝘧 𝘪𝘯𝘧𝘰
+*𝘋𝘦𝘴𝘤𝘳𝘪𝘱𝘤𝘪𝘰́𝘯 :* 𝘔𝘶𝘦𝘴𝘵𝘳𝘢 𝘦𝘭 𝘦𝘴𝘵𝘢𝘥𝘰 𝘢𝘤𝘵𝘶𝘢𝘭 𝘥𝘦 𝘵𝘰𝘥𝘢𝘴 𝘭𝘢𝘴 𝘤𝘰𝘯𝘧𝘪𝘨𝘶𝘳𝘢𝘤𝘪𝘰𝘯𝘦𝘴.
 
 *• 𝘌𝘫𝘦𝘮𝘱𝘭𝘰:*
 *- ${usedPrefix + command}* welcome

@@ -70,7 +70,7 @@ async function serbot() {
             txt += '  `2` : Toque dispositivos vinculados\n'
             txt += '  `3` : Escanea este QR\n\n'
             txt += `> *Nota:* Este código QR expira en 30 segundos.`
-        let sendQR = await parentw.sendFile(m.chat, await qrcode.toDataURL(qr, { scale: 8 }), "qrcode.png", txt, m, null, )
+        let sendQR = await parentw.sendFile(m.chat, await qrcode.toDataURL(qr, { scale: 8 }), "qrcode.png", txt, m, null, rcanal)
         
        setTimeout(() => {
          parentw.sendMessage(m.chat, { delete: sendQR.key })
@@ -86,7 +86,7 @@ async function serbot() {
         delete global.conns[i]
         global.conns.splice(i, 1)
         if (code !== DisconnectReason.connectionClosed) {
-          await parentw.reply(conn.user.jid, "Conexión perdida...", m, )
+          await parentw.reply(conn.user.jid, "Conexión perdida...", m, rcanal)
         }
       }
       if (global.db.data == null) {
@@ -95,13 +95,13 @@ async function serbot() {
       if (connection == "open") {
         conn.isInit = true
         global.conns.push(conn)
-        await parentw.reply(m.chat, args[0] ? 'Conectado con exito' : 'Conectado exitosamente con WhatsApp\n\n*Nota:* Esto es temporal\nSi el Bot principal se reinicia o se desactiva, todos los sub bots tambien lo haran\n\nEl número del bot puede cambiar, guarda este enlace:\n*-* https://whatsapp.com/channel/0029VaBfsIwGk1FyaqFcK91S', m, )
+        await parentw.reply(m.chat, args[0] ? 'Conectado con exito' : 'Conectado exitosamente con WhatsApp\n\n*Nota:* Esto es temporal\nSi el Bot principal se reinicia o se desactiva, todos los sub bots tambien lo haran\n\nEl número del bot puede cambiar, guarda este enlace:\n*-* https://whatsapp.com/channel/0029VaBfsIwGk1FyaqFcK91S', m, rcanal)
         await sleep(5000)
         if (args[0]) {
           return
         }
-        await parentw.reply(conn.user.jid, "La siguiente vez que se conecte envía el siguiente mensaje para iniciar sesión sin escanear otro código *QR*", m, )
-        await parentw.reply(conn.user.jid, usedPrefix + command + " " + Buffer.from(fs.readFileSync(`${folderSub}/creds.json`), 'utf-8').toString('base64'), m, )
+        await parentw.reply(conn.user.jid, "La siguiente vez que se conecte envía el siguiente mensaje para iniciar sesión sin escanear otro código *QR*", m, rcanal)
+        await parentw.reply(conn.user.jid, usedPrefix + command + " " + Buffer.from(fs.readFileSync(`${folderSub}/creds.json`), 'utf-8').toString('base64'), m, rcanal)
       }
     }
 

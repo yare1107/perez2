@@ -16,7 +16,7 @@ conn.reply(m.chat, `
 ┃ ❖ https://pendekarsubs.us
 ┃ ❖ https://myanimelist.net
 ┗━━━━━━━━━━━━━━━━━━━━┅
- `, m, , )
+ `, m, rcanal, )
 
 handler.help = ['animelink']
 handler.tags = ['anime']

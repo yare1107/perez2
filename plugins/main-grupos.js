@@ -18,7 +18,7 @@ Canal :
 *🏷️* ${canal}
 
 > 🚩 ${textbot}`
-await conn.sendFile(m.chat, img, "Thumbnail.jpg", txt, m, null, )
+await conn.sendFile(m.chat, img, "Thumbnail.jpg", txt, m, null, rcanal)
 }
 handler.help = ['grupos']
 handler.tags = ['main']

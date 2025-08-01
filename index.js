@@ -21,7 +21,6 @@ const rl = createInterface(process.stdin, process.stdout)
 const subtitleStyle = chalk.white.bold
 const responseStyle = chalk.dim.bold
 
-// Construir lista de colaboradores activos
 let activeCollaborators = ''
 for (const key in collaborators) {
   if (collaborators.hasOwnProperty(key)) {
@@ -30,7 +29,6 @@ for (const key in collaborators) {
 }
 activeCollaborators = activeCollaborators.slice(0, -2)
 
-// Mostrar título y descripción
 say('Sxnt\nBot', {
   align: 'center',
   gradient: ['red', 'blue']
@@ -42,7 +40,6 @@ say(description, {
   gradient: ['blue', 'magenta']
 })
 
-// Mostrar info principal en caja
 const message = `${subtitleStyle('Desarrollado por »')} ${responseStyle(author.name)}
 ${subtitleStyle('Código basado por »')} ${responseStyle('@Sxnt')}
 ${subtitleStyle('Colaboradores activos »')} ${responseStyle(activeCollaborators)}

@@ -172,10 +172,11 @@ await delay(time)
 }, time)
 }
 
-// CORREGIDO: Mejorado el manejo de mensajes de Baileys
-if (m.fromMe || (m.isBaileys && m?.sender === this?.user?.jid)) {
+// CORREGIDO: Filtro mejorado para mensajes de Baileys - solo bloquear si es del propio bot
+if (m.fromMe && m.isBaileys) {
 return
 }
+
 m.exp += Math.ceil(Math.random() * 10)
 
 let usedPrefix

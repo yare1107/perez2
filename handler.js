@@ -173,7 +173,7 @@ await delay(time)
 }
 
 // CORREGIDO: Mejorado el manejo de mensajes de Baileys
-if (m.isBaileys && m?.sender === this?.user?.jid) {
+if (m.fromMe || (m.isBaileys && m?.sender === this?.user?.jid)) {
 return
 }
 m.exp += Math.ceil(Math.random() * 10)

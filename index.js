@@ -40,10 +40,6 @@ say(description, {
   gradient: ['blue', 'magenta']
 })
 
-const message = `${subtitleStyle('Desarrollado por »')} ${responseStyle(author.name)}
-${subtitleStyle('Código basado por »')} ${responseStyle('@Sxnt')}
-${subtitleStyle('Colaboradores activos »')} ${responseStyle(activeCollaborators)}
-${subtitleStyle('Versión »')} ${responseStyle(version)}`
 
 console.log(boxen(message, {
   padding: 1,
@@ -58,7 +54,7 @@ function start(file) {
   if (isRunning) return
   isRunning = true
 
-  const args = [join(__dirname, file), ...process.argv.slice(2)]
+  const args = [join(__dirame, file), ...process.argv.slice(2)]
 
   setupMaster({
     exec: args[0],

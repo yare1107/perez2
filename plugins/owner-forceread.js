@@ -18,24 +18,70 @@ let handler = async (m, { conn, usedPrefix, command }) => {
   
   let changes = []
   
-  // Forzar configuración del grupo para permitir comandos
+  // SOLUCIÓN CRÍTICA: Asegurar que el grupo existe en la base de datos
+  if (!global.db.data.chats[m.chat]) {
+    global.db.data.chats[m.chat] = {
+      isBanned: false,
+      bienvenida: true,
+      modoadmin: false,
+      onlyGod: false,
+      onlyLatinos: false,
+      detect: true,
+      audios: false,
+      antiLink: false,
+      delete: false,
+      nsfw: false,
+      expired: 0
+    }
+    changes.push('• Grupo agregado a la base de datos')
+  }
+  
+  // SOLUCIÓN CRÍTICA: Asegurar que el usuario existe en la base de datos
+  if (!global.db.data.users[m.sender]) {
+    global.db.data.users[m.sender] = {
+      exp: 0,
+      limit: 5,
+      comida: 8,
+      muto: false,
+      registered: false,
+      name: m.name,
+      age: -1,
+      regTime: -1,
+      afk: -1,
+      afkReason: '',
+      banned: false,
+      useDocument: false,
+      bank: 0,
+      level: 0,
+      spam: 0,
+      warning: 0,
+      antispam: 0,
+      antispam2: 0
+    }
+    changes.push('• Usuario agregado a la base de datos')
+  }
+  
+  // SOLUCIÓN ESPECÍFICA: Desactivar TODAS las restricciones que bloquean comandos
   if (chat) {
-    // Desactivar todas las restricciones
+    // Desactivar baneo del grupo
     if (chat.isBanned) {
       chat.isBanned = false
       changes.push('• Grupo desbaneado')
     }
     
+    // Desactivar modo solo admin
     if (chat.modoadmin) {
       chat.modoadmin = false
       changes.push('• Modo solo admin desactivado')
     }
     
+    // Desactivar modo solo Dios
     if (chat.onlyGod) {
       chat.onlyGod = false
       changes.push('• Modo solo Dios desactivado')
     }
     
+    // Desactivar solo Latinos
     if (chat.onlyLatinos) {
       chat.onlyLatinos = false
       changes.push('• Solo Latinos desactivado')
@@ -74,7 +120,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     }
   }
   
-  // Forzar configuración del usuario
+  // SOLUCIÓN ESPECÍFICA: Desbanear y resetear usuario
   if (user) {
     if (user.banned) {
       user.banned = false
@@ -86,7 +132,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
       changes.push('• Usuario desmuteado')
     }
     
-    // Resetear contadores de spam
+    // Resetear TODOS los contadores que pueden bloquear comandos
     if (user.spam > 0) {
       user.spam = 0
       changes.push('• Contador de spam reseteado')
@@ -108,7 +154,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     }
   }
   
-  // Forzar configuración del bot
+  // SOLUCIÓN ESPECÍFICA: Configurar bot correctamente
   if (bot) {
     if (!bot.jadibotmd) {
       bot.jadibotmd = true
@@ -131,7 +177,17 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     }
   }
   
-  // Verificar si el grupo existe en la base de datos
+  // SOLUCIÓN CRÍTICA: Forzar que el grupo esté en la lista de chats del bot
+  if (!conn.chats[m.chat]) {
+    conn.chats[m.chat] = {
+      id: m.chat,
+      isChats: true,
+      metadata: null
+    }
+    changes.push('• Grupo agregado a la lista de chats del bot')
+  }
+  
+  // SOLUCIÓN ESPECÍFICA: Forzar que el grupo esté en la base de datos global
   if (!global.db.data.chats[m.chat]) {
     global.db.data.chats[m.chat] = {
       isBanned: false,
@@ -146,32 +202,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
       nsfw: false,
       expired: 0
     }
-    changes.push('• Grupo agregado a la base de datos')
-  }
-  
-  // Verificar si el usuario existe en la base de datos
-  if (!global.db.data.users[m.sender]) {
-    global.db.data.users[m.sender] = {
-      exp: 0,
-      limit: 5,
-      comida: 8,
-      muto: false,
-      registered: false,
-      name: m.name,
-      age: -1,
-      regTime: -1,
-      afk: -1,
-      afkReason: '',
-      banned: false,
-      useDocument: false,
-      bank: 0,
-      level: 0,
-      spam: 0,
-      warning: 0,
-      antispam: 0,
-      antispam2: 0
-    }
-    changes.push('• Usuario agregado a la base de datos')
+    changes.push('• Grupo forzado en la base de datos global')
   }
   
   if (changes.length === 0) {

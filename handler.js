@@ -21,12 +21,34 @@ return
 let m = chatUpdate.messages[chatUpdate.messages.length - 1]
 if (!m)
 return;
+
+// IMPLEMENTACIÓN LID: Asegurar que el mensaje tenga un LID válido
+if (!m.key.id) {
+console.log('⚠️ Mensaje sin ID, generando LID...')
+m.key.id = 'LID_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+}
+
+// LID: Verificar estructura de mensaje para grupos
+if (m.key.remoteJid && m.key.remoteJid.endsWith('@g.us')) {
+if (!m.key.participant && m.key.fromMe === false) {
+console.log('⚠️ Mensaje de grupo sin participant, corrigiendo...')
+m.key.participant = m.pushName ? m.pushName + '@s.whatsapp.net' : 'unknown@s.whatsapp.net'
+}
+}
+
 if (global.db.data == null)
 await global.loadDatabase()       
 try {
 m = smsg(this, m) || m
 if (!m)
 return
+
+// LID: Verificar que el mensaje procesado mantenga su estructura
+if (!m.key || !m.key.id) {
+console.log('⚠️ Mensaje perdió estructura después de smsg, restaurando...')
+return
+}
+
 m.exp = 0
 m.limit = false
 m.comida = false
@@ -172,8 +194,14 @@ await delay(time)
 }, time)
 }
 
-// CORREGIDO: Filtro mejorado para mensajes de Baileys - solo bloquear si es del propio bot
+// LID: Filtro mejorado - solo bloquear mensajes propios del bot
 if (m.fromMe && m.isBaileys) {
+return
+}
+
+// LID: Validar que el mensaje tenga toda la información necesaria
+if (m.isGroup && (!m.key.participant || !m.key.remoteJid)) {
+console.log('⚠️ Mensaje de grupo con información incompleta, saltando...')
 return
 }
 
@@ -181,7 +209,14 @@ m.exp += Math.ceil(Math.random() * 10)
 
 let usedPrefix
 
-const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
+// LID: Mejorar obtención de metadata de grupo con manejo de errores
+const groupMetadata = (m.isGroup ? 
+    ((conn.chats[m.chat] || {}).metadata || 
+     await this.groupMetadata(m.chat).catch(err => {
+         console.log(`⚠️ Error obteniendo metadata del grupo ${m.chat}:`, err.message)
+         return null
+     })) : {}) || {}
+
 const participants = (m.isGroup ? groupMetadata.participants : []) || []
 const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) === m.sender) : {}) || {}
 const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == this.user.jid) : {}) || {}
@@ -197,6 +232,13 @@ continue
 if (plugin.disabled)
 continue
 const __filename = join(___dirname, name)
+
+// LID: Verificar que el mensaje sigue siendo válido antes de procesar plugins
+if (!m.key || !m.key.id) {
+console.log('⚠️ Mensaje perdió LID durante procesamiento, saltando plugin:', name)
+continue
+}
+
 if (typeof plugin.all === 'function') {
 try {
 await plugin.all.call(this, m, {
@@ -226,6 +268,7 @@ typeof _prefix === 'string' ?
 [[new RegExp(str2Regex(_prefix)).exec(m.text), new RegExp(str2Regex(_prefix))]] :
 [[[], new RegExp]]
 ).find(p => p[1])
+
 if (typeof plugin.before === 'function') {
 if (await plugin.before.call(this, m, {
 match,
@@ -273,7 +316,7 @@ m.plugin = name
 if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
 let chat = global.db.data.chats[m.chat]
 let user = global.db.data.users[m.sender]
-// CORREGIDO: Mejorado el chequeo de grupos baneados - solo bloquear comandos específicos
+// LID: Mejorado el chequeo de grupos baneados
 if (chat?.isBanned && !isROwner && !['owner-unbanchat.js', 'owner-exec.js', 'owner-exec2.js', 'tool-delete.js', 'owner-banlist.js'].includes(name)) {
 console.log(`[BLOQUEADO] Grupo ${m.chat} está baneado`)
 return
@@ -286,11 +329,11 @@ user.antispam++
 return
 }
 
-// CORREGIDO: Antispam mejorado
+// LID: Antispam mejorado con verificación de LID
 if (user?.antispam2 && isROwner) return
 if (user && user.spam) {
 let time = user.spam + 3000
-if (new Date - user.spam < 3000) return console.log(`[ SPAM ]`) 
+if (new Date - user.spam < 3000) return console.log(`[ SPAM ] LID: ${m.key.id}`) 
 }
 global.db.data.users[m.sender].spam = new Date * 1
 }
@@ -310,13 +353,13 @@ let adminMode = global.db.data.chats[m.chat]?.modoadmin || false;
 let onlyGod = global.db.data.chats[m.chat]?.onlyGod || false;
 let isGod = global.db.data.users[m.sender]?.isGod || false;
 
-// CORREGIDO: Mejorado el manejo de restricciones - solo aplicar si están explícitamente activadas y el usuario no es admin/owner
+// LID: Restricciones mejoradas con logging
 if (onlyGod === true && !isOwner && !isROwner && m.isGroup && !isGod && !isAdmin) {
-console.log(`[BLOQUEADO] Modo solo Dios activado para ${m.sender}`)
+console.log(`[BLOQUEADO] Modo solo Dios activado para ${m.sender} - LID: ${m.key.id}`)
 return
 }
 if (adminMode === true && !isOwner && !isROwner && m.isGroup && !isAdmin) {
-console.log(`[BLOQUEADO] Modo solo admin activado para ${m.sender}`)
+console.log(`[BLOQUEADO] Modo solo admin activado para ${m.sender} - LID: ${m.key.id}`)
 return
 }
 if (plugin.rowner && plugin.owner && !(isROwner || isOwner)) { 
@@ -391,12 +434,14 @@ __dirname: ___dirname,
 __filename
 }
 try {
+// LID: Log de ejecución de comando
+console.log(`[COMANDO] ${command} ejecutado por ${m.sender} - LID: ${m.key.id}`)
 await plugin.call(this, m, extra)
 if (!isPrems)
 m.cookies = m.cookies || plugin.cookies || false
 } catch (e) {
 m.error = e
-console.error(e)
+console.error(`[ERROR] Comando ${command} - LID: ${m.key.id}`, e)
 if (e) {
 let text = format(e)
 for (let key of Object.values(global.APIKeys))
@@ -416,7 +461,7 @@ conn.reply(m.chat, `Utilizaste *${+m.cookies}* 🍪`, m, fake)
 break
 }}
 } catch (e) {
-console.error(e)
+console.error(`[ERROR HANDLER] LID: ${m?.key?.id || 'unknown'}`, e)
 } finally {
 if (opts['queque'] && m.text) {
 const quequeIndex = this.msgqueque.indexOf(m.id || m.key.id)
@@ -465,13 +510,10 @@ stat.lastSuccess = now
 try {
 if (!opts['noprint']) await (await import(`./lib/print.js`)).default(m, this)
 } catch (e) { 
-console.log(m, m.quoted, e)}
+console.log(`[ERROR PRINT] LID: ${m?.key?.id}`, m, m.quoted, e)}
 let settingsREAD = global.db.data.settings[this.user.jid] || {}  
 if (opts['autoread']) await this.readMessages([m.key])
 if (settingsREAD.autoread2) await this.readMessages([m.key])  
-// if (settingsREAD.autoread2 == 'true') await this.readMessages([m.key])    
-// await conn.sendPresenceUpdate('composing', m.chat)
-// this.sendPresenceUpdate('recording', m.chat)
 
 if (db?.data?.chats?.[m.chat]?.reaction && m.text.match(/(ción|dad|aje|oso|izar|mente|pero|tion|age|ous|ate|and|but|ify|ai|otho|a|s)/gi)) {
 let emot = pickRandom(["🍟", "😃", "😄", "😁", "😆", "🍓", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "🌺", "🌸", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🌟", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "💫", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😶‍🌫️", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🤖", "🍭", "🤫", "🫠", "🤥", "😶", "📇", "😐", "💧", "😑", "🫨", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😮‍💨", "😵", "😵‍💫", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👺", "🧿", "🌩", "👻", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🫶", "👍", "✌️", "🙏", "🫵", "🤏", "🤌", "☝️", "🖕", "🙏", "🫵", "🫂", "🐱", "🤹‍♀️", "🤹‍♂️", "🗿", "✨", "⚡", "🔥", "🌈", "🩷", "❤️", "🧡", "💛", "💚", "🩵", "💙", "💜", "🖤", "🩶", "🤍", "🤎", "💔", "❤️‍🔥", "❤️‍🩹", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "🚩", "👊", "⚡️", "💋", "🫰", "💅", "👑", "🐣", "🐤", "🐈"])

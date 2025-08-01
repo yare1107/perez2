@@ -1,6 +1,6 @@
 import yts from 'yt-search' 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
-    if (!text) throw `Ejemplo: ${usedPrefix + command} diles`,m ,rcanal;
+    if (!text) throw `Ejemplo: ${usedPrefix + command} diles`,m ,;
     const randomReduction = Math.floor(Math.random() * 5) + 1;
     let search = await yts(text);
     let f = `\n\n${String.fromCharCode(68,101,118,101,108,111,112,101,100,32,98,121,32,73,39,109,32,70,122,32,126)}`;
@@ -17,7 +17,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     conn.sendMessage(m.chat, { 
         image: { url: search.all[0].thumbnail }, 
         caption: body + f
-    }, { quoted: m,rcanal });
+    }, { quoted: m, });
     m.react('🎵')
     let res = await dl_vid(urls)
     let type = isVideo ? 'video' : 'audio';

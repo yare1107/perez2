@@ -26,48 +26,72 @@
    - El usuario puede estar baneado
    - **Solución:** `/unbanuser @usuario` (solo owner)
 
-### 🔍 Comandos de Diagnóstico
+6. **Grupo no está en la Base de Datos** ⭐ **NUEVO**
+   - El grupo no existe en la base de datos del bot
+   - **Solución:** `/forceread` (solo owner)
+
+7. **Problemas de Conexión** ⭐ **NUEVO**
+   - El bot no está conectado correctamente
+   - **Solución:** Reiniciar el bot
+
+### 🔍 Comandos de Diagnóstico Mejorados
 
 #### Nuevos Comandos Agregados:
 
-1. **`/debug` o `/diagnostico`**
-   - Muestra información completa del grupo y usuario
-   - Identifica problemas específicos
+1. **`/debug` o `/diagnostico`** ⭐ **MEJORADO**
+   - Diagnóstico completo del grupo y usuario
+   - Identifica problemas específicos automáticamente
+   - Muestra soluciones recomendadas
    - Solo para owners
 
-2. **`/resetconfig <tipo>`**
+2. **`/quickfix` o `/solucionrapida`** ⭐ **MEJORADO**
+   - Diagnóstico específico de lectura de comandos
+   - Identifica bloqueos específicos
+   - Aplica correcciones automáticamente
+   - Solo para owners
+
+3. **`/forceread` o `/forzarlectura`** ⭐ **NUEVO**
+   - Fuerza la lectura de comandos en grupos problemáticos
+   - Agrega grupos y usuarios a la base de datos
+   - Desactiva todas las restricciones
+   - Solo para owners
+
+4. **`/resetconfig <tipo>`** ⭐ **MEJORADO**
    - Resetea configuraciones problemáticas
    - Tipos: `all`, `chat`, `user`, `bot`
    - Solo para owners
 
-3. **`/config info` o `/config estado`**
+5. **`/config info` o `/config estado`** ⭐ **MEJORADO**
    - Muestra el estado actual de todas las configuraciones
    - Útil para identificar qué está activado/desactivado
 
-### 🛠️ Pasos para Solucionar Problemas
+### 🛠️ Pasos para Solucionar Problemas de Lectura de Comandos
 
-#### Paso 1: Diagnóstico
+#### Paso 1: Diagnóstico Específico
+```
+/quickfix
+```
+Este comando diagnosticará específicamente por qué el bot no lee comandos.
+
+#### Paso 2: Forzar Lectura (si es necesario)
+```
+/forceread
+```
+Este comando forzará la lectura de comandos en el grupo.
+
+#### Paso 3: Diagnóstico Completo (si persisten problemas)
 ```
 /debug
 ```
-Este comando te mostrará:
-- Estado del grupo (baneado o no)
-- Configuraciones activas
-- Permisos del usuario
-- Permisos del bot
-- Problemas identificados
+Este comando te mostrará información completa del problema.
 
-#### Paso 2: Resetear Configuraciones (si es necesario)
+#### Paso 4: Resetear Configuraciones (si es necesario)
 ```
 /resetconfig all
 ```
-Esto resetea:
-- Configuraciones del grupo
-- Estados de baneo
-- Configuraciones del usuario
-- Configuraciones del bot
+Esto resetea todas las configuraciones.
 
-#### Paso 3: Verificar Estado
+#### Paso 5: Verificar Estado
 ```
 /config info
 ```
@@ -85,6 +109,7 @@ Para confirmar que todo está en orden.
 - `audios` - Audios automáticos
 - `bienvenida` - Mensajes de bienvenida
 - `detect` - Detección de eventos
+- `onlyLatinos` - Solo usuarios latinos
 
 #### Configuraciones del Bot:
 - `jadibotmd` - Modo sub bot
@@ -93,13 +118,13 @@ Para confirmar que todo está en orden.
 - `autoread` - Lectura automática
 - `antiSpam` - Anti spam
 
-### 🚨 Problemas Específicos
+### 🚨 Problemas Específicos de Lectura de Comandos
 
-#### Bot no responde a ningún comando:
-1. Verificar que el bot esté conectado
-2. Usar `/debug` para diagnóstico
-3. Verificar permisos del bot en el grupo
-4. Resetear configuraciones si es necesario
+#### Bot no lee ningún comando:
+1. Usar `/quickfix` para diagnóstico específico
+2. Usar `/forceread` para forzar lectura
+3. Verificar que el bot esté conectado
+4. Verificar que el bot sea administrador
 
 #### Solo algunos comandos no funcionan:
 1. Verificar permisos específicos del comando
@@ -111,15 +136,20 @@ Para confirmar que todo está en orden.
 2. Verificar que `modoadmin` esté desactivado
 3. Verificar que `onlyGod` esté desactivado
 
+#### Grupo no aparece en la base de datos:
+1. Usar `/forceread` para agregar el grupo
+2. Verificar que el bot esté conectado
+3. Reiniciar el bot si es necesario
+
 ### 💡 Consejos Adicionales
 
-1. **Siempre usar `/debug` primero** para identificar el problema específico
+1. **Siempre usar `/quickfix` primero** para diagnóstico específico
 
-2. **Los comandos de owner** (`/debug`, `/resetconfig`) solo funcionan para el owner del bot
+2. **Los comandos de owner** (`/debug`, `/resetconfig`, `/quickfix`, `/forceread`) solo funcionan para el owner del bot
 
 3. **Los comandos de configuración** requieren permisos de administrador en el grupo
 
-4. **Si el problema persiste**, resetear todas las configuraciones con `/resetconfig all`
+4. **Si el problema persiste**, usar `/forceread` para forzar la lectura
 
 5. **Verificar la conexión del bot** antes de hacer diagnósticos
 
@@ -136,8 +166,20 @@ Para confirmar que todo está en orden.
 
 ```
 /debug               - Diagnóstico completo
+/quickfix            - Diagnóstico específico de lectura
+/forceread           - Forzar lectura de comandos
 /config info         - Estado de configuraciones
 /config estado       - Estado de configuraciones
+```
+
+### 🆘 Comandos de Emergencia
+
+```
+/unbanchat           - Desbanear grupo
+/unbanuser @usuario  - Desbanear usuario
+/config modoadmin off - Desactivar modo admin
+/config onlygod off   - Desactivar modo Dios
+/forceread           - Forzar lectura de comandos
 ```
 
 ---

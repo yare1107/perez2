@@ -166,32 +166,43 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isR
 
     case 'info':
     case 'estado':
-      // Mostrar estado actual de configuraciones
-      let statusInfo = `*📊 ESTADO DE CONFIGURACIONES*\n\n`
-      statusInfo += `*🔧 Grupo:*\n`
-      statusInfo += `• Bienvenida: ${chat?.bienvenida ? '✅' : '❌'}\n`
-      statusInfo += `• Modo Solo Admin: ${chat?.modoadmin ? '✅' : '❌'}\n`
-      statusInfo += `• Modo Solo Dios: ${chat?.onlyGod ? '✅' : '❌'}\n`
-      statusInfo += `• Antilink: ${chat?.antiLink ? '✅' : '❌'}\n`
-      statusInfo += `• Antidelete: ${chat?.delete ? '✅' : '❌'}\n`
-      statusInfo += `• NSFW: ${chat?.nsfw ? '✅' : '❌'}\n`
-      statusInfo += `• Audios: ${chat?.audios ? '✅' : '❌'}\n`
-      statusInfo += `• Detect: ${chat?.detect ? '✅' : '❌'}\n`
-      statusInfo += `• Antifake: ${chat?.onlyLatinos ? '✅' : '❌'}\n`
-      statusInfo += `• Reacciones: ${chat?.reaction ? '✅' : '❌'}\n\n`
+    case 'status':
+      let configInfo = `*⚙️ ESTADO DE CONFIGURACIONES*\n\n`
       
-      statusInfo += `*🤖 Bot:*\n`
-      statusInfo += `• JadiBot MD: ${bot?.jadibotmd ? '✅' : '❌'}\n`
-      statusInfo += `• Auto Bio: ${bot?.autobio ? '✅' : '❌'}\n`
-      statusInfo += `• Anti Privado: ${bot?.antiPrivate ? '✅' : '❌'}\n`
-      statusInfo += `• Auto Read: ${bot?.autoread ? '✅' : '❌'}\n`
-      statusInfo += `• Anti Spam: ${bot?.antiSpam ? '✅' : '❌'}\n\n`
+      configInfo += `*📋 Grupo: ${m.chat}*\n`
+      configInfo += `• Baneado: ${chat?.isBanned ? '✅' : '❌'}\n`
+      configInfo += `• Modo Solo Admin: ${chat?.modoadmin ? '✅' : '❌'}\n`
+      configInfo += `• Modo Solo Dios: ${chat?.onlyGod ? '✅' : '❌'}\n`
+      configInfo += `• Solo Latinos: ${chat?.onlyLatinos ? '✅' : '❌'}\n`
+      configInfo += `• Antilink: ${chat?.antiLink ? '✅' : '❌'}\n`
+      configInfo += `• Antidelete: ${chat?.delete ? '✅' : '❌'}\n`
+      configInfo += `• NSFW: ${chat?.nsfw ? '✅' : '❌'}\n`
+      configInfo += `• Audios: ${chat?.audios ? '✅' : '❌'}\n`
+      configInfo += `• Bienvenida: ${chat?.bienvenida ? '✅' : '❌'}\n`
+      configInfo += `• Detect: ${chat?.detect ? '✅' : '❌'}\n\n`
       
-      statusInfo += `*👤 Usuario:*\n`
-      statusInfo += `• Document: ${user?.useDocument ? '✅' : '❌'}\n`
+      configInfo += `*👤 Usuario: ${m.sender}*\n`
+      configInfo += `• Baneado: ${user?.banned ? '✅' : '❌'}\n`
+      configInfo += `• Muteado: ${user?.muto ? '✅' : '❌'}\n`
+      configInfo += `• Premium: ${user?.premium ? '✅' : '❌'}\n`
+      configInfo += `• Registrado: ${user?.registered ? '✅' : '❌'}\n`
+      configInfo += `• Spam: ${user?.spam || 0}\n\n`
       
-      m.reply(statusInfo)
-      return
+      configInfo += `*🤖 Bot:*\n`
+      configInfo += `• JadiBot MD: ${bot?.jadibotmd ? '✅' : '❌'}\n`
+      configInfo += `• Auto Bio: ${bot?.autobio ? '✅' : '❌'}\n`
+      configInfo += `• Anti Privado: ${bot?.antiPrivate ? '✅' : '❌'}\n`
+      configInfo += `• Auto Read: ${bot?.autoread ? '✅' : '❌'}\n`
+      configInfo += `• Anti Spam: ${bot?.antiSpam ? '✅' : '❌'}\n\n`
+      
+      configInfo += `*💡 Comandos de Control:*\n`
+      configInfo += `• /debug - Diagnóstico completo\n`
+      configInfo += `• /resetconfig all - Resetear todo\n`
+      configInfo += `• /config modoadmin off - Desactivar modo admin\n`
+      configInfo += `• /config onlygod off - Desactivar modo Dios\n`
+      
+      m.reply(configInfo)
+      break
       
     default:
       if (!/[01]/.test(command)) return m.reply(`

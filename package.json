@@ -35,7 +35,7 @@
 },
 "license": "GPL-3.0-or-later",
 "dependencies": {
-"@whiskeysockets/baileys": "npm:@fizzxydev/baileys-pro",
+"@whiskeysockets/baileys": "npm:@izumi-xyz/meta",
 "@SumiFX/Scraper": "github:SumiFX/SumiFX-Scraper",
 "@StarlightsTeam/Scraper": "github:StarlightsTeam/StarlightsTeam-Scraper",
 "@adiwajshing/keyed-db": "^0.2.4",

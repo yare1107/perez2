@@ -6,12 +6,14 @@ import { setupMaster, fork } from 'cluster';
 import { watchFile, unwatchFile } from 'fs';
 import cfonts from 'cfonts'
 import { createInterface } from 'readline'
-import yargs from 'yargs'
 import chalk from 'chalk'
+
 console.log('\n✰ Iniciando Sxnt ✰')
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const require = createRequire(__dirname)
 const { name, description, collaborators, author, version } = require(join(__dirname, './package.json'))
+const yargs = require('yargs/yargs')
+const { hideBin } = require('yargs/helpers')
 const { say } = cfonts
 const rl = createInterface(process.stdin, process.stdout)
 const subtitleStyle = chalk.white.bold
@@ -69,7 +71,7 @@ unwatchFile(args[0])
 start(file)
 })
 })
-let opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
+let opts = new Object(yargs(hideBin(process.argv)).exitProcess(false).parse())
 if (!opts['test'])
 if (!rl.listenerCount()) rl.on('line', line => {
 p.emit('message', line.trim())

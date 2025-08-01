@@ -1,12 +1,12 @@
 import axios from 'axios'
 
 let handler = async (m, { conn, text }) => {
-if (!text) return conn.reply(m.chat, '🧃 Ingrese el texto del post que deseas buscar.', m, rcanal)
+if (!text) return conn.reply(m.chat, '🧃 Ingrese el texto del post que deseas buscar.', m)
 await m.react('⌛')
 try {
 let json = await axios.get(`https://apis-starlights-team.koyeb.app/starlight/Twitter-Posts?text=${text}`, { headers: { 'Content-Type': 'application/json' }})
 let result = json.data.result
-if (!result || !result.length) return conn.reply(m.chat, `No se encontraron resultados.`, m, rcanal)
+if (!result || !result.length) return conn.reply(m.chat, `No se encontraron resultados.`, m)
         
 let txt = '`- T W I T T E R  -  S E A R C H`'
     result.forEach(({ user, post, profile, user_link }, index) => {
@@ -17,7 +17,7 @@ let txt = '`- T W I T T E R  -  S E A R C H`'
     txt += `  *🪪 Perfil* : ${profile}\n`
     txt += `  *🏷️ Link* : ${user_link}`
     })
-await conn.reply(m.chat, txt, m, rcanal)
+await conn.reply(m.chat, txt, m)
 await m.react('✅')
 } catch {
 await m.react('✖️')

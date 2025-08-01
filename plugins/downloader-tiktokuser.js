@@ -1,7 +1,7 @@
 import Starlights from '@StarlightsTeam/Scraper'
 
 let handler = async (m, { conn, usedPrefix, command, text }) => {
-  if (!text) return conn.reply(m.chat, '🚩 Ingresa el nombre de usuario de TikTok que deseas buscar.\n\n`Ejemplo:`\n' + `> *${usedPrefix + command}* Sisked_1`, m, rcanal)
+  if (!text) return conn.reply(m.chat, '🚩 Ingresa el nombre de usuario de TikTok que deseas buscar.\n\n`Ejemplo:`\n' + `> *${usedPrefix + command}* Sisked_1`, m)
   await m.react('🕓')
   try {
     let data = await Starlights.tiktokuser(text)
@@ -23,7 +23,7 @@ let handler = async (m, { conn, usedPrefix, command, text }) => {
             txt += `    ✩  *Descargas* : ${video.download_count}\n\n`
             txt += `> 🚩 ${textbot}`
 
-        await conn.sendFile(m.chat, video.dl_url, `video_${i + 1}.mp4`, txt, m, null, rcanal)
+        await conn.sendFile(m.chat, video.dl_url, `video_${i + 1}.mp4`, txt, m, null)
       }
       await m.react('✅')
     } else {

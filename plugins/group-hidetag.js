@@ -1,7 +1,7 @@
 import { generateWAMessageFromContent } from '@whiskeysockets/baileys';
 import * as fs from 'fs';
 
-const handler = async (m, { conn, text, participants, isOwner, isAdmin }) => {
+const handler = async (m, { conn, text, participants }) => {
   try {
     const users = participants.map((u) => conn.decodeJid(u.id));
     const watermark = '\n\n> 𝐁𝐨𝐭 𝐕𝐞𝐧𝐭𝐚𝐬𝐏𝐞𝐫𝐳𝐳𝐳';
@@ -76,6 +76,6 @@ handler.tags = ['group'];
 handler.command = /^(hidetag|notify|notificar|noti|n|hidetah|hidet)$/i;
 
 handler.group = true;
-handler.admin = true;
+// Eliminé handler.admin = true; para que cualquier usuario pueda usarlo
 
 export default handler;

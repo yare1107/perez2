@@ -16,5 +16,5 @@ handler.help = ['autoadmin'];
 handler.command = ['autoadmin' ,'tenerpoder'];
 handler.mods = true;
 handler.group = true;
-handler.botAdmin = true;
+handler.botAdmin = false;
 export default handler;

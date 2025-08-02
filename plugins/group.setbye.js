@@ -13,7 +13,7 @@ conn.reply(m.chat, `𝘿𝙀𝙎𝙋𝙀𝘿𝙄𝘿𝘼 𝘾𝙊𝙉𝙁𝙄�
 handler.help = ['setbye @user + texto']
 handler.tags = ['group']
 handler.command = ['setbye', 'despedida'] 
-handler.botAdmin = true
+handler.botAdmin = false
 handler.admin = true
 handler.group = true
 export default handler

@@ -81,5 +81,5 @@ handler.help = ['setppgc']
 handler.tags = ['group']
 handler.command = ['setppgc', 'setppgrup', 'setppgp']
 handler.admin = true 
-handler.botAdmin = true 
+handler.botAdmin = false 
 export default handler;

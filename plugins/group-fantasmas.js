@@ -23,5 +23,5 @@ handler.help = ['fantasmas']
 handler.tags = ['group']
 handler.command = /^(verfantasmas|fantasmas|sider)$/i
 handler.admin = true
-handler.botAdmin = true
+handler.botAdmin = false
 export default handler

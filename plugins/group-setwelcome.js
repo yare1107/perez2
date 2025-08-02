@@ -13,7 +13,7 @@ conn.reply(m.chat, '𝘽𝙄𝙀𝙉𝙑𝙀𝙉𝙄𝘿𝘼 𝘾𝙊𝙉𝙁�
 handler.help = ['setwelcome @user + texto']
 handler.tags = ['group']
 handler.command = ['setwelcome', 'bienvenida'] 
-handler.botAdmin = true
+handler.botAdmin = false
 handler.admin = true
 handler.group = true
 export default handler

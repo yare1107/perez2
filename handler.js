@@ -6,9 +6,6 @@ import { unwatchFile, watchFile } from 'fs'
 import chalk from 'chalk'
 import fetch from 'node-fetch'
 
-// IMPORTAR SISTEMA PREMIUM
-import { isPremium, canUsePrivate, canUseCommand, getPremiumMessage, getPrivateBlockedMessage, requiresPremium } from './lib/premium.js';
-
 const { proto } = (await import('@whiskeysockets/baileys')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
 const delay = ms => isNumber(ms) && new Promise(resolve => setTimeout(function () {
@@ -47,10 +44,6 @@ if (!isNumber(user.comida))
 user.comida = 8
 if (!('muto' in user))
 user.muto = false
-if (!('premium' in user)) 
-user.premium = false
-if (!user.premium) 
-user.premiumTime = 0
 if (!('registered' in user))
 user.registered = false
 if (!user.registered) {
@@ -160,23 +153,7 @@ let _user = global.db.data && global.db.data.users && global.db.data.users[m.sen
 const isROwner = [conn.decodeJid(global.conn.user.id), ...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
 const isOwner = isROwner || m.fromMe
 const isMods = isOwner || global.mods.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
-const isPrems = isROwner || global.prems.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender) || _user.prem == true
-
-// === SISTEMA PREMIUM: VERIFICACIONES PRINCIPALES ===
-const userId = m.sender;
-const isPremiumUser = isPremium(userId);
-const isGroup = m.isGroup;
-
-// 1. BLOQUEAR CHAT PRIVADO PARA NO-PREMIUM (excepto owners)
-if (!isGroup && !canUsePrivate(userId, isOwner)) {
-  await this.sendMessage(m.chat, { text: getPrivateBlockedMessage() });
-  return; // Bloquear ejecución completa
-}
-
-// Agregar info premium al objeto m para uso posterior
-m.isPremium = isPremiumUser;
-m.canUsePrivate = canUsePrivate(userId, isOwner);
-// === FIN VERIFICACIONES PREMIUM ===
+const isPrems = isROwner || global.prems.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
 
 if (opts['queque'] && m.text && !(isMods || isPrems)) {
 let queque = this.msgqueque, time = 1000 * 5
@@ -285,36 +262,6 @@ if (!isAccept) {
 continue
 }
 
-// === SISTEMA PREMIUM: VERIFICAR COMANDOS PREMIUM ===
-if (requiresPremium(command) && !isPremiumUser && !isOwner) {
-  await this.sendMessage(m.chat, { text: getPremiumMessage() });
-  continue; // Saltar al siguiente plugin
-}
-
-// VERIFICAR PERMISOS POR NIVEL DE COMANDO
-const commandLevel = getCommandLevel(command);
-if (!canUseCommand(userId, isOwner, isAdmin, commandLevel)) {
-  let errorMessage = '';
-  
-  switch (commandLevel) {
-    case 'premium':
-      errorMessage = getPremiumMessage();
-      break;
-    case 'admin':
-      errorMessage = '❌ *Solo administradores y usuarios Premium pueden usar este comando*';
-      break;
-    case 'owner':
-      errorMessage = '❌ *Solo el Owner puede usar este comando*';
-      break;
-    default:
-      errorMessage = '❌ *No tienes permisos para usar este comando*';
-  }
-  
-  await this.sendMessage(m.chat, { text: errorMessage });
-  continue; // Saltar al siguiente plugin
-}
-// === FIN VERIFICACIONES PREMIUM ===
-
 m.plugin = name
 if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
 let chat = global.db.data.chats[m.chat]
@@ -350,7 +297,6 @@ let hl = _prefix
 let adminMode = global.db.data.chats[m.chat].modoadmin;
 let onlyGod = global.db.data.chats[m.chat].onlyGod;
 let isGod = global.db.data.users[m.sender].isGod;
-
 
 if (onlyGod && !isOwner && !isROwner && m.isGroup && !isGod) return;
 if (adminMode && !isOwner && !isROwner && m.isGroup && !isAdmin) return;
@@ -537,34 +483,17 @@ this.copyNForward(msg.chat, msg).catch(e => console.log(e, msg))
 console.error(e)
 }}
 
-// === FUNCIÓN AUXILIAR PARA DETERMINAR NIVEL DE COMANDO ===
-function getCommandLevel(command) {
-  // Comandos owner
-  const ownerCommands = ['addprem', 'delprem', 'listprem', 'checkprem', 'broadcast', 'bc', 'banchat', 'unbanchat', 'exec', 'exec2'];
-  if (ownerCommands.includes(command)) return 'owner';
-  
-  // Comandos premium (usar la función del sistema)
-  if (requiresPremium(command)) return 'premium';
-  
-  // Comandos admin
-  const adminCommands = ['ban', 'unban', 'kick', 'promote', 'demote', 'hidetag', 'tagall', 'group', 'link'];
-  if (adminCommands.includes(command)) return 'admin';
-  
-  // Comandos básicos (por defecto)
-  return 'basic';
-}
-
 global.dfail = (type, m, conn) => {
 const msg = {
-rowner: `¿Se te subieron los humos? 💀 éste comando solo puede ser utilizado por 𝗦𝗲𝗿𝗽𝗲𝗻𝘁 𝗕𝗮𝗻 👑.`,
-owner: `¿Se te subieron los humos? 💀 éste comando solo puede ser utilizado por 𝗦𝗲𝗿𝗽𝗲𝗻𝘁 𝗕𝗮𝗻 👑`,
-mods: `¿Se te subieron los humos? 💀 éste comando solo puede ser utilizado por 𝗦𝗲𝗿𝗽𝗲𝗻𝘁 𝗕𝗮𝗻 👑`,
+rowner: `¿Se te subieron los humos? 💀 éste comando solo puede ser utilizado por 𝗦𝗲𝗿𝗽𝗲𝗻𝘁 𝗕𝗮𝗻 👑.`,
+owner: `¿Se te subieron los humos? 💀 éste comando solo puede ser utilizado por 𝗦𝗲𝗿𝗽𝗲𝗻𝘁 𝗕𝗮𝗻 👑`,
+mods: `¿Se te subieron los humos? 💀 éste comando solo puede ser utilizado por 𝗦𝗲𝗿𝗽𝗲𝗻𝘁 𝗕𝗮𝗻 👑`,
 premium: `😂 Okey pero, este comando solo puede ser utilizado por Usuarios *Premium*.`,
 group: `💫 Hola, este comando solo puede ser utilizado en *Grupos*.`,
 private: `⚕️ Hola, este comando solo puede ser utilizado en mi Chat *Privado*.`,
-admin: `Calmad@ que este comando solo puede ser utilizado por los 𝗔𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝗱𝗼𝗿𝗲𝘀 del grupo. 🤡`,
-botAdmin: `𝗦𝗶𝗻 𝗮𝗱𝗺𝗶𝗻 𝗻𝗼 𝘀𝗶𝗿𝘃𝗼, 𝗶𝗴𝘂𝗮𝗹 𝗾𝘂𝗲 𝗹𝗼𝘀 𝗱𝗲𝗺𝗮́𝘀 𝗺𝗶𝗲𝗺𝗯𝗿𝗼𝘀 𝗱𝗲𝗹 𝗴𝗿𝘂𝗽𝗼 🗣🔥`,
-unreg: `🤚🏻 Relaja La Raja, Para Usar Este Comando Debes Estar *Registrado.*\n\nUtiliza: */reg nombre.edad*\n\n> Ejemplo: /reg Serpent.21`,
+admin: `Calmad@ que este comando solo puede ser utilizado por los 𝗔𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝗱𝗼𝗿𝗲𝘀 del grupo. 🤡`,
+botAdmin: `𝗦𝗶𝗻 𝗮𝗱𝗺𝗶𝗻 𝗻𝗼 𝘀𝗶𝗿𝘃𝗼, 𝗶𝗴𝘂𝗮𝗹 𝗾𝘂𝗲 𝗹𝗼𝘀 𝗱𝗲𝗺𝗮́𝘀 𝗺𝗶𝗲𝗺𝗯𝗿𝗼𝘀 𝗱𝗲𝗹 𝗴𝗿𝘂𝗽𝗼 🗣🔥`,
+unreg: `🤚🏻 Relaja La Raja, Para Usar Este Comando Debes Estar *Registrado.*\n\nUtiliza: */reg nombre.edad*\n\n> Ejemplo: /reg Serpent.21`,
 restrict: `⚠️ Esta Característica Está *Deshabilitada.*`  
 }[type];
 if (msg) return conn.reply(m.chat, msg, m, rcanal).then(_ => m.react('✖️'))}

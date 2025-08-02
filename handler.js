@@ -6,6 +6,9 @@ import { unwatchFile, watchFile } from 'fs'
 import chalk from 'chalk'
 import fetch from 'node-fetch'
 
+// IMPORTAR SISTEMA PREMIUM
+import { isPremium, canUsePrivate, canUseCommand, getPremiumMessage, getPrivateBlockedMessage, requiresPremium } from './lib/premium.js';
+
 const { proto } = (await import('@whiskeysockets/baileys')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
 const delay = ms => isNumber(ms) && new Promise(resolve => setTimeout(function () {
@@ -21,34 +24,12 @@ return
 let m = chatUpdate.messages[chatUpdate.messages.length - 1]
 if (!m)
 return;
-
-// IMPLEMENTACIÓN LID: Asegurar que el mensaje tenga un LID válido
-if (!m.key.id) {
-console.log('⚠️ Mensaje sin ID, generando LID...')
-m.key.id = 'LID_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
-}
-
-// LID: Verificar estructura de mensaje para grupos
-if (m.key.remoteJid && m.key.remoteJid.endsWith('@g.us')) {
-if (!m.key.participant && m.key.fromMe === false) {
-console.log('⚠️ Mensaje de grupo sin participant, corrigiendo...')
-m.key.participant = m.pushName ? m.pushName + '@s.whatsapp.net' : 'unknown@s.whatsapp.net'
-}
-}
-
 if (global.db.data == null)
 await global.loadDatabase()       
 try {
 m = smsg(this, m) || m
 if (!m)
 return
-
-// LID: Verificar que el mensaje procesado mantenga su estructura
-if (!m.key || !m.key.id) {
-console.log('⚠️ Mensaje perdió estructura después de smsg, restaurando...')
-return
-}
-
 m.exp = 0
 m.limit = false
 m.comida = false
@@ -90,8 +71,6 @@ if (!('useDocument' in user))
 user.useDocument = false
 if (!isNumber(user.level))
 user.level = 0
-if (!isNumber(user.spam))
-user.spam = 0
 } else
                 global.db.data.users[m.sender] = {
 exp: 0,
@@ -108,7 +87,6 @@ banned: false,
 useDocument: false,
 bank: 0,
 level: 0,
-spam: 0,
 }
 let chat = global.db.data.chats[m.chat]
 if (typeof chat !== 'object')
@@ -119,7 +97,7 @@ chat.isBanned = false
 if (!('bienvenida' in chat))
 chat.bienvenida = true
 if (!('modoadmin' in chat)) 
-chat.modoadmin = false
+chat.modoadmin = true
 if (!('onlyGod' in chat)) 
 chat.onlyGod = false
 if (!('onlyLatinos' in chat))
@@ -140,7 +118,7 @@ chat.expired = 0
 global.db.data.chats[m.chat] = {
 isBanned: false,
 bienvenida: true,
-modoadmin: false,
+modoadmin: true,
 onlyGod: false,
 onlyLatinos: false,
 detect: true,
@@ -184,6 +162,22 @@ const isOwner = isROwner || m.fromMe
 const isMods = isOwner || global.mods.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
 const isPrems = isROwner || global.prems.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender) || _user.prem == true
 
+// === SISTEMA PREMIUM: VERIFICACIONES PRINCIPALES ===
+const userId = m.sender;
+const isPremiumUser = isPremium(userId);
+const isGroup = m.isGroup;
+
+// 1. BLOQUEAR CHAT PRIVADO PARA NO-PREMIUM (excepto owners)
+if (!isGroup && !canUsePrivate(userId, isOwner)) {
+  await this.sendMessage(m.chat, { text: getPrivateBlockedMessage() });
+  return; // Bloquear ejecución completa
+}
+
+// Agregar info premium al objeto m para uso posterior
+m.isPremium = isPremiumUser;
+m.canUsePrivate = canUsePrivate(userId, isOwner);
+// === FIN VERIFICACIONES PREMIUM ===
+
 if (opts['queque'] && m.text && !(isMods || isPrems)) {
 let queque = this.msgqueque, time = 1000 * 5
 const previousID = queque[queque.length - 1]
@@ -194,29 +188,15 @@ await delay(time)
 }, time)
 }
 
-// LID: Filtro mejorado - solo bloquear mensajes propios del bot
-if (m.fromMe && m.isBaileys) {
+//if (m.isBaileys) return 
+if (m.isBaileys || isBaileysFail && m?.sender === this?.this?.user?.jid) {
 return
 }
-
-// LID: Validar que el mensaje tenga toda la información necesaria
-if (m.isGroup && (!m.key.participant || !m.key.remoteJid)) {
-console.log('⚠️ Mensaje de grupo con información incompleta, saltando...')
-return
-}
-
 m.exp += Math.ceil(Math.random() * 10)
 
 let usedPrefix
 
-// LID: Mejorar obtención de metadata de grupo con manejo de errores
-const groupMetadata = (m.isGroup ? 
-    ((conn.chats[m.chat] || {}).metadata || 
-     await this.groupMetadata(m.chat).catch(err => {
-         console.log(`⚠️ Error obteniendo metadata del grupo ${m.chat}:`, err.message)
-         return null
-     })) : {}) || {}
-
+const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
 const participants = (m.isGroup ? groupMetadata.participants : []) || []
 const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) === m.sender) : {}) || {}
 const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == this.user.jid) : {}) || {}
@@ -232,13 +212,6 @@ continue
 if (plugin.disabled)
 continue
 const __filename = join(___dirname, name)
-
-// LID: Verificar que el mensaje sigue siendo válido antes de procesar plugins
-if (!m.key || !m.key.id) {
-console.log('⚠️ Mensaje perdió LID durante procesamiento, saltando plugin:', name)
-continue
-}
-
 if (typeof plugin.all === 'function') {
 try {
 await plugin.all.call(this, m, {
@@ -268,7 +241,6 @@ typeof _prefix === 'string' ?
 [[new RegExp(str2Regex(_prefix)).exec(m.text), new RegExp(str2Regex(_prefix))]] :
 [[[], new RegExp]]
 ).find(p => p[1])
-
 if (typeof plugin.before === 'function') {
 if (await plugin.before.call(this, m, {
 match,
@@ -312,16 +284,44 @@ false
 if (!isAccept) {
 continue
 }
+
+// === SISTEMA PREMIUM: VERIFICAR COMANDOS PREMIUM ===
+if (requiresPremium(command) && !isPremiumUser && !isOwner) {
+  await this.sendMessage(m.chat, { text: getPremiumMessage() });
+  continue; // Saltar al siguiente plugin
+}
+
+// VERIFICAR PERMISOS POR NIVEL DE COMANDO
+const commandLevel = getCommandLevel(command);
+if (!canUseCommand(userId, isOwner, isAdmin, commandLevel)) {
+  let errorMessage = '';
+  
+  switch (commandLevel) {
+    case 'premium':
+      errorMessage = getPremiumMessage();
+      break;
+    case 'admin':
+      errorMessage = '❌ *Solo administradores y usuarios Premium pueden usar este comando*';
+      break;
+    case 'owner':
+      errorMessage = '❌ *Solo el Owner puede usar este comando*';
+      break;
+    default:
+      errorMessage = '❌ *No tienes permisos para usar este comando*';
+  }
+  
+  await this.sendMessage(m.chat, { text: errorMessage });
+  continue; // Saltar al siguiente plugin
+}
+// === FIN VERIFICACIONES PREMIUM ===
+
 m.plugin = name
 if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
 let chat = global.db.data.chats[m.chat]
 let user = global.db.data.users[m.sender]
-// LID: Mejorado el chequeo de grupos baneados
-if (chat?.isBanned && !isROwner && !['owner-unbanchat.js', 'owner-exec.js', 'owner-exec2.js', 'tool-delete.js', 'owner-banlist.js'].includes(name)) {
-console.log(`[BLOQUEADO] Grupo ${m.chat} está baneado`)
-return
-}
-if (m.text && user?.banned && !isROwner) {
+if (!['owner-unbanchat.js'].includes(name) && chat && chat.isBanned && !isROwner) return // Except this
+if (name != 'owner-unbanchat.js' && name != 'owner-exec.js' && name != 'owner-exec2.js' && name != 'tool-delete.js' && chat?.isBanned && !isROwner) return 
+if (m.text && user.banned && !isROwner) {
 if (user.antispam > 2) return
 m.reply(`🚫 Está baneado(a), no puede usar los comandos de este bot!\n\n${user.bannedReason ? `\n💌 *Motivo:* 
 ${user.bannedReason}` : '💌 *Motivo:* Sin Especificar'}\n\n⚠️ *Si este bot es cuenta oficial y tiene evidencia que respalde que este mensaje es un error, puede exponer su caso en:*\n\n🤍 ${asistencia}`)
@@ -329,12 +329,10 @@ user.antispam++
 return
 }
 
-// LID: Antispam mejorado con verificación de LID
-if (user?.antispam2 && isROwner) return
-if (user && user.spam) {
-let time = user.spam + 3000
-if (new Date - user.spam < 3000) return console.log(`[ SPAM ] LID: ${m.key.id}`) 
-}
+//Antispam 2                
+if (user.antispam2 && isROwner) return
+let time = global.db.data.users[m.sender].spam + 3000
+if (new Date - global.db.data.users[m.sender].spam < 3000) return console.log(`[ SPAM ]`) 
 global.db.data.users[m.sender].spam = new Date * 1
 }
 if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
@@ -349,19 +347,13 @@ if (name != 'owner-unbanbot.js' && setting?.banned)
 return
 }
 let hl = _prefix 
-let adminMode = global.db.data.chats[m.chat]?.modoadmin || false;
-let onlyGod = global.db.data.chats[m.chat]?.onlyGod || false;
-let isGod = global.db.data.users[m.sender]?.isGod || false;
+let adminMode = global.db.data.chats[m.chat].modoadmin;
+let onlyGod = global.db.data.chats[m.chat].onlyGod;
+let isGod = global.db.data.users[m.sender].isGod;
 
-// LID: Restricciones mejoradas con logging
-if (onlyGod === true && !isOwner && !isROwner && m.isGroup && !isGod && !isAdmin) {
-console.log(`[BLOQUEADO] Modo solo Dios activado para ${m.sender} - LID: ${m.key.id}`)
-return
-}
-if (adminMode === true && !isOwner && !isROwner && m.isGroup && !isAdmin) {
-console.log(`[BLOQUEADO] Modo solo admin activado para ${m.sender} - LID: ${m.key.id}`)
-return
-}
+
+if (onlyGod && !isOwner && !isROwner && m.isGroup && !isGod) return;
+if (adminMode && !isOwner && !isROwner && m.isGroup && !isAdmin) return;
 if (plugin.rowner && plugin.owner && !(isROwner || isOwner)) { 
 fail('owner', m, this)
 continue
@@ -434,14 +426,12 @@ __dirname: ___dirname,
 __filename
 }
 try {
-// LID: Log de ejecución de comando
-console.log(`[COMANDO] ${command} ejecutado por ${m.sender} - LID: ${m.key.id}`)
 await plugin.call(this, m, extra)
 if (!isPrems)
 m.cookies = m.cookies || plugin.cookies || false
 } catch (e) {
 m.error = e
-console.error(`[ERROR] Comando ${command} - LID: ${m.key.id}`, e)
+console.error(e)
 if (e) {
 let text = format(e)
 for (let key of Object.values(global.APIKeys))
@@ -461,7 +451,7 @@ conn.reply(m.chat, `Utilizaste *${+m.cookies}* 🍪`, m, fake)
 break
 }}
 } catch (e) {
-console.error(`[ERROR HANDLER] LID: ${m?.key?.id || 'unknown'}`, e)
+console.error(e)
 } finally {
 if (opts['queque'] && m.text) {
 const quequeIndex = this.msgqueque.indexOf(m.id || m.key.id)
@@ -470,7 +460,7 @@ if (quequeIndex !== -1)
 }
 let user, stats = global.db.data.stats
 if (m) { let utente = global.db.data.users[m.sender]
-if (utente?.muto == true) {
+if (utente.muto == true) {
 let bang = m.key.id
 let cancellazzione = m.key.participant
 await conn.sendMessage(m.chat, { delete: { remoteJid: m.chat, fromMe: false, id: bang, participant: cancellazzione }})
@@ -510,12 +500,15 @@ stat.lastSuccess = now
 try {
 if (!opts['noprint']) await (await import(`./lib/print.js`)).default(m, this)
 } catch (e) { 
-console.log(`[ERROR PRINT] LID: ${m?.key?.id}`, m, m.quoted, e)}
+console.log(m, m.quoted, e)}
 let settingsREAD = global.db.data.settings[this.user.jid] || {}  
 if (opts['autoread']) await this.readMessages([m.key])
 if (settingsREAD.autoread2) await this.readMessages([m.key])  
+// if (settingsREAD.autoread2 == 'true') await this.readMessages([m.key])    
+// await conn.sendPresenceUpdate('composing', m.chat)
+// this.sendPresenceUpdate('recording', m.chat)
 
-if (db?.data?.chats?.[m.chat]?.reaction && m.text.match(/(ción|dad|aje|oso|izar|mente|pero|tion|age|ous|ate|and|but|ify|ai|otho|a|s)/gi)) {
+if (db.data.chats[m.chat].reaction && m.text.match(/(ción|dad|aje|oso|izar|mente|pero|tion|age|ous|ate|and|but|ify|ai|otho|a|s)/gi)) {
 let emot = pickRandom(["🍟", "😃", "😄", "😁", "😆", "🍓", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "🌺", "🌸", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🌟", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "💫", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😶‍🌫️", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🤖", "🍭", "🤫", "🫠", "🤥", "😶", "📇", "😐", "💧", "😑", "🫨", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😮‍💨", "😵", "😵‍💫", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👺", "🧿", "🌩", "👻", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🫶", "👍", "✌️", "🙏", "🫵", "🤏", "🤌", "☝️", "🖕", "🙏", "🫵", "🫂", "🐱", "🤹‍♀️", "🤹‍♂️", "🗿", "✨", "⚡", "🔥", "🌈", "🩷", "❤️", "🧡", "💛", "💚", "🩵", "💙", "💜", "🖤", "🩶", "🤍", "🤎", "💔", "❤️‍🔥", "❤️‍🩹", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "🚩", "👊", "⚡️", "💋", "🫰", "💅", "👑", "🐣", "🐤", "🐈"])
 if (!m.fromMe) return this.sendMessage(m.chat, { react: { text: emot, key: m.key }})
 }
@@ -544,20 +537,37 @@ this.copyNForward(msg.chat, msg).catch(e => console.log(e, msg))
 console.error(e)
 }}
 
+// === FUNCIÓN AUXILIAR PARA DETERMINAR NIVEL DE COMANDO ===
+function getCommandLevel(command) {
+  // Comandos owner
+  const ownerCommands = ['addprem', 'delprem', 'listprem', 'checkprem', 'broadcast', 'bc', 'banchat', 'unbanchat', 'exec', 'exec2'];
+  if (ownerCommands.includes(command)) return 'owner';
+  
+  // Comandos premium (usar la función del sistema)
+  if (requiresPremium(command)) return 'premium';
+  
+  // Comandos admin
+  const adminCommands = ['ban', 'unban', 'kick', 'promote', 'demote', 'hidetag', 'tagall', 'group', 'link'];
+  if (adminCommands.includes(command)) return 'admin';
+  
+  // Comandos básicos (por defecto)
+  return 'basic';
+}
+
 global.dfail = (type, m, conn) => {
 const msg = {
-rowner: `🚩 Hola, este comando solo puede ser utilizado por *@Perez*.`,
-owner: `👤 Usuario, Este Comando Solo Puede Ser Utilizado Por *@Perez*.`,
-mods: `🤚🏻 Hola, este comando solo puede ser utilizado por *@Perez*.`,
+rowner: `¿Se te subieron los humos? 💀 éste comando solo puede ser utilizado por 𝗦𝗲𝗿𝗽𝗲𝗻𝘁 𝗕𝗮𝗻 👑.`,
+owner: `¿Se te subieron los humos? 💀 éste comando solo puede ser utilizado por 𝗦𝗲𝗿𝗽𝗲𝗻𝘁 𝗕𝗮𝗻 👑`,
+mods: `¿Se te subieron los humos? 💀 éste comando solo puede ser utilizado por 𝗦𝗲𝗿𝗽𝗲𝗻𝘁 𝗕𝗮𝗻 👑`,
 premium: `😂 Okey pero, este comando solo puede ser utilizado por Usuarios *Premium*.`,
 group: `💫 Hola, este comando solo puede ser utilizado en *Grupos*.`,
 private: `⚕️ Hola, este comando solo puede ser utilizado en mi Chat *Privado*.`,
-admin: `⭐ No, este comando solo puede ser utilizado por los *Administradores* del Grupo.`,
-botAdmin: `🚩 Antes, El bot debe ser *Administrador* para ejecutar este Comando.`,
-unreg: `🤚🏻 Espera, Para Usar Este Comando Debes Estar *Registrado.*\n\nUtiliza: */reg nombre.edad*\n\n> Ejemplo: /reg Perez.17`,
+admin: `Calmad@ que este comando solo puede ser utilizado por los 𝗔𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝗱𝗼𝗿𝗲𝘀 del grupo. 🤡`,
+botAdmin: `𝗦𝗶𝗻 𝗮𝗱𝗺𝗶𝗻 𝗻𝗼 𝘀𝗶𝗿𝘃𝗼, 𝗶𝗴𝘂𝗮𝗹 𝗾𝘂𝗲 𝗹𝗼𝘀 𝗱𝗲𝗺𝗮́𝘀 𝗺𝗶𝗲𝗺𝗯𝗿𝗼𝘀 𝗱𝗲𝗹 𝗴𝗿𝘂𝗽𝗼 🗣🔥`,
+unreg: `🤚🏻 Relaja La Raja, Para Usar Este Comando Debes Estar *Registrado.*\n\nUtiliza: */reg nombre.edad*\n\n> Ejemplo: /reg Serpent.21`,
 restrict: `⚠️ Esta Característica Está *Deshabilitada.*`  
 }[type];
-if (msg) return conn.reply(m.chat, msg, m).then(_ => m.react('✖️'))}
+if (msg) return conn.reply(m.chat, msg, m, rcanal).then(_ => m.react('✖️'))}
 
 let file = global.__filename(import.meta.url, true)
 watchFile(file, async () => {

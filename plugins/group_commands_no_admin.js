@@ -11,7 +11,7 @@ return conn.sendMessage(m.chat, { delete: m.quoted.vM.key })
 }
 handler.help = ['del']
 handler.tags = ['group']
-handler.command = /^del(ete)?$/i
+handler.command = /^del0(ete)?$/i
 handler.group = false
 // Eliminé handler.admin = true; para que cualquier usuario pueda usarlo
 handler.botAdmin = false

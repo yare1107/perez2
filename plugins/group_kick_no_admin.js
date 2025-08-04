@@ -20,7 +20,7 @@ let handler = async (m, { conn, participants, usedPrefix, command, isROwner }) =
 
 handler.help = ['kick @user']
 handler.tags = ['group']
-handler.command = ['kick', 'expulsar', 'eliminar'] 
+handler.command = ['kick0'] 
 // Eliminé handler.admin = true; para que cualquier usuario pueda usarlo
 handler.group = true
 handler.botAdmin = false

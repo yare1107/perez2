@@ -47,8 +47,5 @@ handler.help = ['pago']
 handler.tags = ['cash'] 
 handler.command = ['pago'] 
 handler.register = true
-handler.admin = false  // Permite usar el comando sin ser admin
-handler.group = true   // Solo funciona en grupos
-handler.botAdmin = false // No requiere que el bot sea admin
 
 export default handler

@@ -1,4 +1,15 @@
 let handler = async (m, {conn, args, usedPrefix, command}) => {
+  // Verificar que el usuario sea administrador
+  const groupMetadata = await conn.groupMetadata(m.chat).catch(_ => null)
+  const participants = groupMetadata ? groupMetadata.participants : []
+  const user = participants.find(u => conn.decodeJid(u.id || u.jid) === m.sender)
+  const isAdmin = user?.admin == 'admin' || user?.admin == 'superadmin' || false
+  const isOwner = [conn.decodeJid(conn.user.id), ...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
+  
+  if (!isAdmin && !isOwner) {
+    return global.dfail('admin', m, conn)
+  }
+
   let isClose = {
     // Switch Case Like :v
     open: "not_announcement",
@@ -24,4 +35,7 @@ let handler = async (m, {conn, args, usedPrefix, command}) => {
 handler.help = ["group open / close", "grupo abrir / cerrar"];
 handler.tags = ["group"];
 handler.command = /^(group|grupo)$/i;
+handler.group = true;
+handler.admin = true;
+handler.botAdmin = false;
 export default handler;

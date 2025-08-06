@@ -34,6 +34,6 @@ handler.tags = ["group"];
 handler.command = /^(promote|daradmin|darpoder)$/i;
 handler.group = true;
 handler.admin = true;
-handler.botAdmin = false;
+handler.botAdmin = true;
 handler.fail = null;
 export default handler;

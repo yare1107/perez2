@@ -11,5 +11,6 @@ handler.tags = ['group']
 handler.help = ['encuesta *<pregunta|opciones>*']
 handler.command = ['encuesta', 'poll']
 handler.group = true
+handler.admin = true
 
 export default handler

@@ -3,7 +3,7 @@ import * as fs from 'fs';
 
 const handler = async (m, { conn, text, participants }) => {
   try {
-    const users = participants.map((u) => conn.decodeJid(u.id));
+    const users = participants.map((u) => conn.decodeJid(u.id || u.jid));
     const watermark = '\n\n> 𝐁𝐨𝐭 𝐕𝐞𝐧𝐭𝐚𝐬𝐏𝐞𝐫𝐳𝐳𝐳';
 
     const q = m.quoted ? m.quoted : m || m.text || m.sender;
@@ -28,7 +28,7 @@ const handler = async (m, { conn, text, participants }) => {
 
     await conn.relayMessage(m.chat, msg.message, { messageId: msg.key.id });
   } catch {
-    const users = participants.map((u) => conn.decodeJid(u.id));
+    const users = participants.map((u) => conn.decodeJid(u.id || u.jid));
     const quoted = m.quoted ? m.quoted : m;
     const mime = (quoted.msg || quoted).mimetype || '';
     const isMedia = /image|video|sticker|audio/.test(mime);
@@ -76,6 +76,6 @@ handler.tags = ['group'];
 handler.command = /^(hidetag|notify|notificar|noti|n|hidetah|hidet)$/i;
 
 handler.group = true;
-// Eliminé handler.admin = true; para que cualquier usuario pueda usarlo
+handler.admin = true;
 
 export default handler;

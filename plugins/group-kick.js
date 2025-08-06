@@ -23,6 +23,6 @@ handler.tags = ['group']
 handler.command = ['kick', 'expulsar', 'eliminar'] 
 handler.admin = true
 handler.group = true
-handler.botAdmin = false
+handler.botAdmin = true
 
 export default handler

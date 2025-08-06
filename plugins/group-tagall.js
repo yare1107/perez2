@@ -228,14 +228,15 @@ const handler = async (m, {conn, text, participants, args}) => {
     let teks = `*${groupName}*\n\n*Integrantes : ${participants.length}*\n${pesan}\n┌──⭓ *Despierten*\n`; 
     
     for (const mem of participants) {
-        teks += `${emoji} ${getCountryFlag(mem.id)} @${mem.id.split('@')[0]}\n`;
+        const userId = mem.id || mem.jid;
+        teks += `${emoji} ${getCountryFlag(userId)} @${userId.split('@')[0]}\n`;
     }
     
     teks += `└───────⭓\n\n> 𝐁𝐨𝐭 𝐕𝐞𝐧𝐭𝐚𝐬𝐏𝐞𝐫𝐳𝐳𝐳`; 
     
     await conn.sendMessage(m.chat, {
         text: teks, 
-        mentions: participants.map((a) => a.id)
+        mentions: participants.map((a) => a.id || a.jid)
     });
 }; 
 
@@ -243,6 +244,6 @@ handler.help = ['todos'];
 handler.tags = ['group']; 
 handler.command = /^(tagall|invocar|marcar|todos|invocación)$/i; 
 handler.group = true; 
-// Eliminé handler.admin = true; para que cualquier usuario pueda usarlo
+handler.admin = true;
 
 export default handler;

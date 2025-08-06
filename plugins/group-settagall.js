@@ -12,4 +12,5 @@ handler.command = ['emotag']
 handler.help = ['emotag < emoji >']
 handler.tags = ['group']
 handler.admin = true;
+handler.group = true;
 export default handler

@@ -1,7 +1,13 @@
 import { generateWAMessageFromContent } from '@whiskeysockets/baileys';
 import * as fs from 'fs';
 
-const handler = async (m, { conn, text, participants }) => {
+const handler = async (m, { conn, text, participants, isOwner, isAdmin }) => {
+  // Verificación de permisos de administrador - ESTO ES LO QUE FALTABA
+  if (!(isAdmin || isOwner)) {
+    global.dfail('admin', m, conn);
+    throw false;
+  }
+
   try {
     const users = participants.map((u) => conn.decodeJid(u.id || u.jid));
     const watermark = '\n\n> 𝐁𝐨𝐭 𝐕𝐞𝐧𝐭𝐚𝐬𝐏𝐞𝐫𝐳𝐳𝐳';
@@ -59,8 +65,8 @@ const handler = async (m, { conn, text, participants }) => {
             contextInfo: {
               mentionedJid: users,
               externalAdReply: {
-                thumbnail: icons,
-                sourceUrl: channel
+                thumbnail: global.icons || null, // Agregado null como fallback
+                sourceUrl: global.channel || ''  // Agregado string vacío como fallback
               }
             }
           }
@@ -74,7 +80,6 @@ const handler = async (m, { conn, text, participants }) => {
 handler.help = ['hidetag'];
 handler.tags = ['group'];
 handler.command = /^(hidetag|notify|notificar|noti|n|hidetah|hidet)$/i;
-
 handler.group = true;
 handler.admin = true;
 

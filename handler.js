@@ -179,7 +179,7 @@ const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id || u.jid) =
 const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == this.user.jid) : {}) || {}
 const isRAdmin = user?.admin == 'superadmin' || false
 const isAdmin = isRAdmin || user?.admin == 'admin' || false
-const isBotAdmin = bot?.admin || false
+const isBotAdmin = bot?.admin === 'admin' || bot?.admin === 'superadmin' || false
 
 const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins')
 for (let name in global.plugins) {
